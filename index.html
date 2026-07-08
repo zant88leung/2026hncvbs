@@ -122,12 +122,13 @@
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: center; }
         .admin-table th, .admin-table td { border: 1px solid #ddd; padding: 10px 6px; }
         .admin-table th { background-color: #f8f9fa; font-weight: bold; }
-        .score-adjust-btn { background: #34495e; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin: 2px; font-size: 0.9em; }
+        .score-adjust-btn { color: white; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.9em; width: 100%; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .score-adjust-btn:active { transform: translateY(2px); box-shadow: none; }
         .rename-btn { border: none; background: none; cursor: pointer; font-size: 1.1em; transition: transform 0.2s; }
         .rename-btn:hover { transform: scale(1.2); }
 
         /* 核心遊戲與問答元件 */
-        .verse-box { background: #f8f9fa; border-left: 5px solid #4facfe; padding: 15px; border-radius: 0 8px 8px 0; font-size: 1.2em; margin-bottom: 20px; text-align: left; line-height: 1.5; }
+        .verse-box { background: #f8f9fa; border-left: 5px solid #4facfe; padding: 15px; border-radius: 0 8px 8px 0; font-size: 1.2em; margin-bottom: 20px; text-align: left; line-height: 1.5; min-height: 80px; }
         .action-btn { background: #ff4757; color: white; padding: 15px; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; width: 100%; cursor: pointer; box-shadow: 0 4px 0 #c0392b; margin-top: 10px; }
         .action-btn.submit { background: #2ecc71; box-shadow: 0 4px 0 #27ae60; }
         .action-btn:active { transform: translateY(2px); box-shadow: none; }
@@ -197,7 +198,7 @@
                 <h2 class="game-title">小勇士登入系統</h2>
                 <input type="text" id="username" placeholder="輸入導師分發的學生 ID" autocomplete="off" />
                 <button class="auth-btn" onclick="loginUser()">登入挑戰</button>
-                <p style="font-size: 0.85em; color: #7f8c8d; margin-top:15px; line-height: 1.4;">只需輸入專屬 ID 即可登入。<br>測試 ID 為 <strong>guest</strong>。</p>
+                <p style="font-size: 0.85em; color: #7f8c8d; margin-top:15px; line-height: 1.4;">只需輸入專屬 ID 即可登入。</p>
             </div>
         </div>
 
@@ -225,7 +226,7 @@
                 </button>
             </div>
 
-            <!-- 新增：主選單下方的主題列表卡片 -->
+            <!-- 主選單下方的主題列表卡片 -->
             <div class="game-card" style="margin-top: 25px; text-align: left; padding: 20px 25px;">
                 <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; font-size: 1.2em; text-align: center;">🌟 暑期聖經班主題 🌟</h3>
                 <div style="font-size: 1.05em; line-height: 1.9; color: #34495e; font-weight: bold;">
@@ -255,7 +256,7 @@
                 <h2 class="game-title" style="color: #2980b9;">🎤 <span id="verse-week-label"></span> 背誦金句</h2>
                 <div class="verse-box">
                     <p style="margin:0 0 5px 0; font-size:0.8em; color:#7f8c8d; font-weight: bold;">本週核心金句：</p>
-                    <strong id="verse-text">載入中...</strong>
+                    <strong id="verse-text" style="color: #2c3e50; transition: all 0.3s;">載入中...</strong>
                 </div>
                 
                 <p style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px;">點擊開始錄音，背誦完成後試聽並上傳。</p>
@@ -294,9 +295,9 @@
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>學生姓名</th>
-                                <th>錄音播放</th>
-                                <th>操作</th>
+                                <th style="width: 25%;">學生姓名</th>
+                                <th style="width: 40%;">錄音播放</th>
+                                <th style="width: 35%;">操作 (批改發金幣)</th>
                             </tr>
                         </thead>
                         <tbody id="admin-recordings-body"></tbody>
@@ -327,7 +328,7 @@
         // ==========================================
         // 🔧 【全域設定】導師每週需更改此數字 (1 至 6)
         // ==========================================
-        const CURRENT_ACTIVE_WEEK = 1; // 假設現在是第 1 週，改為 2 則開放第 2 週，以此類推。
+        const CURRENT_ACTIVE_WEEK = 1;
 
         let currentSelectedWeek = 1; 
         let navigationHistory = []; 
@@ -574,7 +575,10 @@
         function startVerse(weekIndex) {
             currentSelectedWeek = weekIndex;
             document.getElementById('verse-week-label').innerText = `[第 ${weekIndex} 週]`;
+            // 設定經文文字並清除可能殘留的隱藏樣式
             document.getElementById('verse-text').innerText = versesData[weekIndex] || "本週金句導師尚在準備中...";
+            document.getElementById('verse-text').style.color = '#2c3e50';
+            
             document.getElementById('record-theme-reminder').innerText = "💡 本週核心：" + weeklyThemes[weekIndex];
             navigateTo('record-section');
         }
@@ -594,6 +598,12 @@
                     document.getElementById('upload-record-btn').style.display = 'block';
                 };
                 mediaRecorder.start();
+                
+                // 【核心改動】錄音開始，隱藏經文提示
+                const verseEl = document.getElementById('verse-text');
+                verseEl.innerText = "🎙️ 錄音中，請憑記憶背誦...";
+                verseEl.style.color = "#e74c3c";
+
                 document.getElementById('start-record-btn').style.display = 'none';
                 document.getElementById('stop-record-btn').style.display = 'block';
                 document.getElementById('audio-playback').style.display = 'none';
@@ -603,6 +613,12 @@
 
         function stopRecording() {
             if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+            
+            // 【核心改動】錄音結束，重新顯示經文，讓學生可以對答案
+            const verseEl = document.getElementById('verse-text');
+            verseEl.innerText = versesData[currentSelectedWeek];
+            verseEl.style.color = "#2c3e50";
+
             document.getElementById('stop-record-btn').style.display = 'none';
             const btn = document.getElementById('start-record-btn');
             btn.style.display = 'block'; btn.innerText = "🔄 重新錄製"; btn.style.background = "#e67e22"; btn.style.boxShadow = "0 4px 0 #d35400";
@@ -688,7 +704,7 @@
         }
 
         // ==========================================
-        // 導師管理後台
+        // 導師管理後台 (引入三級評分系統)
         // ==========================================
         function loadAdminPanel() {
             navigateTo('admin-section');
@@ -698,10 +714,14 @@
                 recordBody.innerHTML = snapshot.empty ? '<tr><td colspan="3" style="color:#7f8c8d;">目前沒有需要批改的錄音。</td></tr>' : '';
                 snapshot.forEach(doc => {
                     const data = doc.data(); const tr = document.createElement('tr');
+                    // 更新為三個評分按鈕，以直排顯示更美觀
                     tr.innerHTML = `<td><strong>${data.studentName}</strong></td>
-                                    <td><audio controls src="${data.audioUrl}" style="height:35px; width:120px;"></audio></td>
-                                    <td><button class="score-adjust-btn" style="background:#27ae60;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'approved')">✅ 及格</button>
-                                        <button class="score-adjust-btn" style="background:#e74c3c;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'rejected')">❌ 退回</button></td>`;
+                                    <td><audio controls src="${data.audioUrl}" style="height:35px; width:100%;"></audio></td>
+                                    <td style="display: flex; flex-direction: column; gap: 6px;">
+                                        <button class="score-adjust-btn" style="background:#2ecc71;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'excellent')">🌟 非常好 (100分)</button>
+                                        <button class="score-adjust-btn" style="background:#f39c12;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'pass')">✅ 及格 (50分)</button>
+                                        <button class="score-adjust-btn" style="background:#e74c3c;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'try_again')">💪 仍需努力 (20分)</button>
+                                    </td>`;
                     recordBody.appendChild(tr);
                 });
             });
@@ -716,31 +736,43 @@
                                     <td><span style="color:#2980b9; font-weight:bold;">${d.attendance_score || 0}</span></td>
                                     <td><span style="color:#e67e22; font-weight:bold;">${d.performance_score || 0}</span></td>
                                     <td><strong style="color:#f39c12;">${d.coins || 0}</strong></td>
-                                    <td><button class="score-adjust-btn" onclick="adjustStudentMetric('${id}', 'attendance_score', 10)">+10 出席</button>
-                                        <button class="score-adjust-btn" onclick="adjustStudentMetric('${id}', 'performance_score', 5)">+5 表現</button></td>`;
+                                    <td style="display: flex; flex-direction: column; gap: 4px;">
+                                        <button class="score-adjust-btn" style="background:#34495e;" onclick="adjustStudentMetric('${id}', 'attendance_score', 30)">+30 出席</button>
+                                        <button class="score-adjust-btn" style="background:#34495e;" onclick="adjustStudentMetric('${id}', 'performance_score', 10)">+10 表現</button>
+                                    </td>`;
                     tbody.appendChild(tr);
                 });
             });
         }
+
         function renameStudent(id, curName) {
             const newName = prompt("請輸入真實姓名：", curName);
             if (newName && newName.trim()) db.collection("users").doc(id).update({ name: newName.trim() }).catch(e => alert("更新失敗"));
         }
         
+        // 根據三級評分發放獎勵與通知
         function reviewRecording(rId, uId, status) {
             db.collection("recordings").doc(rId).update({ status: status });
-            if (status === 'approved') { 
-                db.collection("users").doc(uId).update({ 
-                    coins: firebase.firestore.FieldValue.increment(50),
-                    unread_notification: "🎉 你的錄音已被導師批改為及格，獲得 50 金幣！"
-                }); 
-                showNotification('批改完成！已發放 50 金幣並通知學生。'); 
-            } else {
-                db.collection("users").doc(uId).update({ 
-                    unread_notification: "⚠️ 你的錄音已被導師退回，請重新嘗試一次喔！"
-                });
-                showNotification('已退回錄音並發送通知給該學生。', '#e74c3c');
+            
+            let coinReward = 0;
+            let msg = "";
+
+            if (status === 'excellent') {
+                coinReward = 100;
+                msg = "🎉 你的錄音表現【非常好】，獲得 100 金幣！";
+            } else if (status === 'pass') {
+                coinReward = 50;
+                msg = "🎉 你的錄音已經【及格】，獲得 50 金幣！";
+            } else if (status === 'try_again') {
+                coinReward = 20;
+                msg = "💪 你的錄音【仍需努力】，獲得 20 金幣當作鼓勵，下次會更好！";
             }
+
+            db.collection("users").doc(uId).update({ 
+                coins: firebase.firestore.FieldValue.increment(coinReward),
+                unread_notification: msg
+            }); 
+            showNotification(`批改完成！已發放 ${coinReward} 金幣並通知學生。`); 
         }
         
         function adjustStudentMetric(id, field, inc) {
