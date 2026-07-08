@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🔥🦁火焰與獅子：勇者傳說</title>
+    
+    <!-- 引入 Firebase SDK (保留 Auth 與 Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --blue: #2393f5; --blue-dark: #03c2cc;
+            --green: #1ec555; --green-dark: #38f9d7;
+            --orange: #fa709a; --orange-dark: #fee140;
+            --dark: #2c3e50;
+            --bg-top: #e0c3fc; --bg-bottom: #8ec5fc;
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            background-attachment: fixed;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 頂部導航列 */
+        .app-header {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-sizing: border-box;
+        }
+
+        .back-btn, .logout-btn {
+            position: absolute;
+            background: #f1f2f6;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+        }
+        .back-btn { left: 15px; display: none; }
+        .logout-btn { right: 15px; display: none; background: #ff7675; color: white; }
+        .app-title { margin: 0; font-size: 1.3em; font-weight: 900; color: #34495e; }
+
+        /* 中間主要內容區 */
+        .content-area {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        /* 頂部狀態列 */
+        .status-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 900;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: space-around;
+        }
+        .user-tag { color: #34495e; }
+        .coin-tag { color: #f39c12; }
+
+        /* 頁面切換控制 */
+        .page { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 選單按鈕 */
+        .menu-container { display: flex; flex-direction: column; gap: 15px; }
+        .mode-btn {
+            padding: 18px 20px; border: none; border-radius: 15px; color: white; cursor: pointer;
+            width: 100%; text-align: left; display: flex; align-items: center; font-size: 1.2em; font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .btn-blue { background: linear-gradient(45deg, var(--blue), var(--blue-dark)); box-shadow: 0 4px 0 #2980b9; }
+        .btn-green { background: linear-gradient(45deg, var(--green), var(--green-dark)); box-shadow: 0 4px 0 #27ae60; color: #111; }
+        .btn-admin { background: #2c3e50; box-shadow: 0 4px 0 #1a252f; display: none; }
+        
+        /* 鎖定狀態按鈕樣式 */
+        .btn-locked { background: #e0e0e0; box-shadow: 0 4px 0 #bdc3c7; color: #7f8c8d; cursor: not-allowed; }
+        .mode-btn:active:not(.btn-locked) { transform: translateY(4px); box-shadow: none; }
+
+        /* 卡片外框 */
+        .game-card { background: white; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
+        .game-title { font-size: 1.5em; font-weight: 900; margin-top: 0; margin-bottom: 20px; }
+
+        /* 登入表單元件 */
+        .auth-form input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ecf0f1; border-radius: 8px; box-sizing: border-box; font-size: 1.1em; }
+        .auth-btn { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; }
+        
+        /* 導師後台表格 */
+        .admin-table-wrapper { overflow-x: auto; margin-top: 15px; margin-bottom: 30px; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: center; }
+        .admin-table th, .admin-table td { border: 1px solid #ddd; padding: 10px 6px; }
+        .admin-table th { background-color: #f8f9fa; font-weight: bold; }
+        .score-adjust-btn { background: #34495e; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin: 2px; font-size: 0.9em; }
+        .rename-btn { border: none; background: none; cursor: pointer; font-size: 1.1em; transition: transform 0.2s; }
+        .rename-btn:hover { transform: scale(1.2); }
+
+        /* 核心遊戲與問答元件 */
+        .verse-box { background: #f8f9fa; border-left: 5px solid #4facfe; padding: 15px; border-radius: 0 8px 8px 0; font-size: 1.2em; margin-bottom: 20px; text-align: left; line-height: 1.5; }
+        .action-btn { background: #ff4757; color: white; padding: 15px; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; width: 100%; cursor: pointer; box-shadow: 0 4px 0 #c0392b; margin-top: 10px; }
+        .action-btn.submit { background: #2ecc71; box-shadow: 0 4px 0 #27ae60; }
+        .action-btn:active { transform: translateY(2px); box-shadow: none; }
+        .action-btn:disabled { background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; cursor: not-allowed; }
+        
+        .quiz-btn { padding: 15px; font-size: 1.1em; border-radius: 10px; border: 2px solid #ecf0f1; background: white; width: 100%; text-align: left; font-weight: bold; margin-bottom: 12px; cursor: pointer; transition: background 0.2s; }
+        .quiz-btn:hover { background: #fcfcfc; }
+        audio { width: 100%; margin-top: 15px; outline: none; }
+
+        /* 每課主題提醒與通知樣式 */
+        .theme-reminder {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fffdf5;
+            border-left: 5px solid #f39c12;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1.05em;
+            font-weight: bold;
+            color: #d35400;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            line-height: 1.4;
+        }
+
+        #notification-toast {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2ecc71;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 9999;
+            font-weight: bold;
+            text-align: center;
+            animation: fadeInDown 0.5s ease-out;
+            width: 80%;
+            max-width: 400px;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 系統通知氣泡 -->
+    <div id="notification-toast">
+        <span id="toast-msg"></span>
+    </div>
+
+    <header class="app-header">
+        <button id="back-btn" class="back-btn" onclick="goBack()">◀ 返回</button>
+        <h1 class="app-title">🔥🦁火焰與獅子：勇者傳說</h1>
+        <button id="logout-btn" class="logout-btn" onclick="logoutUser()">登出</button>
+    </header>
+
+    <div class="content-area">
+        
+        <!-- ================= 頁面：學生登入 ================= -->
+        <div id="login-section" class="page active">
+            <div class="game-card auth-form">
+                <h2 class="game-title">小勇士登入系統</h2>
+                <input type="text" id="username" placeholder="輸入導師分發的學生 ID" autocomplete="off" />
+                <button class="auth-btn" onclick="loginUser()">登入挑戰</button>
+                <p style="font-size: 0.85em; color: #7f8c8d; margin-top:15px; line-height: 1.4;">只需輸入專屬 ID 即可登入。<br>測試 ID 為 <strong>guest</strong>。</p>
+            </div>
+        </div>
+
+        <!-- 頂部即時狀態列 -->
+        <div id="status-bar" class="status-bar" style="display: none;">
+            <span class="user-tag">👤 <span id="user-name">載入中...</span></span>
+            <span class="coin-tag">💰 <span id="coin-count">0</span></span>
+        </div>
+
+        <!-- ================= 頁面：主要功能選單 ================= -->
+        <div id="main-menu" class="page">
+            <div class="menu-container">
+                <button class="mode-btn btn-blue" onclick="openWeekSelector('verse')">
+                    <span style="font-size:1.8em; margin-right:15px;">🎤</span> 
+                    <div>背誦聖經金句<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">錄音上傳領取獎勵</span></div>
+                </button>
+                <button class="mode-btn btn-green" onclick="openWeekSelector('quiz')">
+                    <span style="font-size:1.8em; margin-right:15px;">🧠</span> 
+                    <div>勇者問答挑戰<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">每週精選聖經問答</span></div>
+                </button>
+                
+                <button id="admin-btn" class="mode-btn btn-admin" onclick="loadAdminPanel()">
+                    <span style="font-size:1.8em; margin-right:15px;">📊</span> 
+                    <div>導師管理台<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">批改錄音與進度追蹤</span></div>
+                </button>
+            </div>
+
+            <!-- 新增：主選單下方的主題列表卡片 -->
+            <div class="game-card" style="margin-top: 25px; text-align: left; padding: 20px 25px;">
+                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; font-size: 1.2em; text-align: center;">🌟 暑期聖經班主題 🌟</h3>
+                <div style="font-size: 1.05em; line-height: 1.9; color: #34495e; font-weight: bold;">
+                    <div><span style="color:#f39c12; margin-right:8px;">第1週</span> 🚫不向偶像低頭【決心】</div>
+                    <div><span style="color:#f39c12; margin-right:8px;">第2週</span> 🔮揭開異夢奧祕【智慧】</div>
+                    <div><span style="color:#f39c12; margin-right:8px;">第3週</span> 🔥火窯中的朋友【忠心】</div>
+                    <div><span style="color:#f39c12; margin-right:8px;">第4週</span> 😤驕傲人的結局【謙卑】</div>
+                    <div><span style="color:#f39c12; margin-right:8px;">第5週</span> 🙏不停止的禱告【堅持】</div>
+                    <div><span style="color:#f39c12; margin-right:8px;">第6週</span> 🦁封住獅子的口【信心】</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 頁面：選擇週數選單 ================= -->
+        <div id="week-select-section" class="page">
+            <div class="game-card">
+                <h2 class="game-title" id="week-title" style="color: #2c3e50;">選擇週數</h2>
+                <div class="menu-container" id="week-buttons-container">
+                    <!-- 由 JavaScript 動態生成 1-6 週按鈕 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 頁面：背金句 ================= -->
+        <div id="record-section" class="page">
+            <div class="game-card">
+                <h2 class="game-title" style="color: #2980b9;">🎤 <span id="verse-week-label"></span> 背誦金句</h2>
+                <div class="verse-box">
+                    <p style="margin:0 0 5px 0; font-size:0.8em; color:#7f8c8d; font-weight: bold;">本週核心金句：</p>
+                    <strong id="verse-text">載入中...</strong>
+                </div>
+                
+                <p style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px;">點擊開始錄音，背誦完成後試聽並上傳。</p>
+                <button id="start-record-btn" class="action-btn" onclick="startRecording()">🔴 開始錄音</button>
+                <button id="stop-record-btn" class="action-btn" style="background:#34495e; box-shadow: 0 4px 0 #2c3e50; display:none;" onclick="stopRecording()">⏹️ 停止錄音</button>
+                <audio id="audio-playback" controls style="display: none;"></audio>
+                <button id="upload-record-btn" class="action-btn submit" style="display:none;" onclick="uploadRecording()">📤 上傳給導師批改</button>
+                
+                <div id="record-theme-reminder" class="theme-reminder"></div>
+            </div>
+        </div>
+
+        <!-- ================= 頁面：問答挑戰 ================= -->
+        <div id="quiz-section" class="page">
+            <div class="game-card">
+                <h2 class="game-title" style="color: #27ae60;">🧠 <span id="quiz-week-label"></span> 問答挑戰</h2>
+                <div style="font-weight:bold; color:#7f8c8d; margin-bottom: 18px; font-size: 1.1em;">
+                    進度：第 <span id="quiz-progress" style="color:#27ae60; font-size:1.3em;">1</span> 題
+                </div>
+                <div id="quiz-container">
+                    <p id="question-text" style="font-size:1.15em; font-weight:bold; margin-bottom: 22px; text-align:left; line-height:1.4;">載入中...</p>
+                    <div id="options-container"></div>
+                </div>
+
+                <div id="quiz-theme-reminder" class="theme-reminder"></div>
+            </div>
+        </div>
+
+        <!-- ================= 頁面：導師管理後台 ================= -->
+        <div id="admin-section" class="page">
+            <div class="game-card" style="padding: 20px 10px;">
+                <h2 class="game-title" style="color: #2c3e50; margin-bottom: 10px;">📊 導師管理台</h2>
+                
+                <h3 style="text-align: left; color: #2980b9; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px;">🎧 待批改錄音</h3>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>學生姓名</th>
+                                <th>錄音播放</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-recordings-body"></tbody>
+                    </table>
+                </div>
+
+                <h3 style="text-align: left; color: #27ae60; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px;">📝 全體成績與加分</h3>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>出席分</th>
+                                <th>表現分</th>
+                                <th>總金幣</th>
+                                <th>手動加分</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================================
+        // 🔧 【全域設定】導師每週需更改此數字 (1 至 6)
+        // ==========================================
+        const CURRENT_ACTIVE_WEEK = 1; // 假設現在是第 1 週，改為 2 則開放第 2 週，以此類推。
+
+        let currentSelectedWeek = 1; 
+        let navigationHistory = []; 
+
+        // ==========================================
+        // 1. Firebase 初始化設置
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyOgghNZaV8y9yAkTXL5M3SyL7s7oABuY",
+            authDomain: "hncvbs-4e033.firebaseapp.com",
+            projectId: "hncvbs-4e033",
+            storageBucket: "hncvbs-4e033.firebasestorage.app",
+            messagingSenderId: "1048162479697",
+            appId: "1:1048162479697:web:986c9898d56643e6791270",
+            measurementId: "G-KX66VPH3B7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserDoc = null;
+        let currentUserId = null;
+        const UNIVERSAL_PASSWORD = "SummerCamp2026!";
+
+        // 顯示頂部系統通知 (Toast) 的功能
+        function showNotification(msg, color = "#2ecc71") {
+            const toast = document.getElementById('notification-toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.style.background = color;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4500);
+        }
+
+        // ==========================================
+        // 六週的主題設定
+        // ==========================================
+        const weeklyThemes = {
+            1: "第1週：🚫不向偶像低頭【決心】",
+            2: "第2週：🔮揭開異夢奧祕【智慧】",
+            3: "第3週：🔥火窯中的朋友【忠心】",
+            4: "第4週：😤驕傲人的結局【謙卑】",
+            5: "第5週：🙏不停止的禱告【堅持】",
+            6: "第6週：🦁封住獅子的口【信心】"
+        };
+
+        // ==========================================
+        // 六週的金句題庫設定
+        // ==========================================
+        const versesData = {
+            1: "「但以理卻立志不以王的膳和王所飲的酒玷污自己。」(但以理書 1:8上)",
+            2: "「上帝的名是應當稱頌的！從亙古直到永遠，因為智慧能力都屬乎他。」(但以理書 2:20)",
+            3: "「我們所事奉的上帝能將我們從烈火的窯中救出來。」(但以理書 3:17)",
+            4: "「好叫世人知道至高者在人的國中掌權，要將國賜與誰就賜與誰。」(但以理書 4:37中)",
+            5: "「但以理一日三次雙膝跪在他上帝面前，禱告感謝，與素常一樣。」(但以理書 6:10下)",
+            6: "「我的上帝差遣使者封住獅子的口，叫獅子不傷我。」(但以理書 6:22上)"
+        };
+
+       // ==========================================
+        // 六週的問答題庫設定
+        // ==========================================
+        const quizDataAll = {
+            1: [
+                { q: "但以理和他的三個朋友被帶到了哪一個國家的王宮？", options: ["巴比倫國", "波斯國", "埃及國"], a: 0 },
+                { q: "但以理決心不吃王的膳食和酒，是為了在上帝面前保持什麼？", options: ["身體強壯", "聖潔不玷污自己", "聰明智慧"], a: 1 },
+                { q: "但以理向誰提出請求，求他容自己不吃王膳？", options: ["尼布甲尼撒王", "太監長", "護衛長"], a: 1 },
+                { q: "太監長原本擔心但以理他們只吃素菜白水會變得如何？", options: ["面貌比其他人俊美", "面貌顯得枯瘦難看", "身體過於肥胖"], a: 1 },
+                { q: "但以理提議測試他們吃素菜喝白水多少天？", options: ["3天", "7天", "10天"], a: 2 },
+                { q: "測試結束後，但以理和朋友的容貌看起來怎樣？", options: ["比吃王膳的人更肥胖俊美", "面黃肌瘦", "沒有任何改變"], a: 0 },
+                { q: "上帝賜給這四個少年人什麼特別的恩賜？", options: ["聰明知識", "製造武器的技術", "治理國家的財富"], a: 0 },
+                { q: "但以理特別明白什麼奧秘？", options: ["各國的語言與文字", "各種的異象和夢兆", "星象與天氣變化"], a: 1 },
+                { q: "尼布甲尼撒王考查他們後，發現他們的智慧比全國的術士勝過多少倍？", options: ["兩倍", "五倍", "十倍"], a: 2 },
+                { q: "第1課的主題教導我們學習什麼品格？", options: ["決心", "謙卑", "堅持"], a: 0 }
+            ],
+            2: [
+                { q: "尼布甲尼撒王因為什麼事情心裡煩亂，甚至不能睡覺？", options: ["國家發生戰爭", "做了一個異夢", "國庫沒有金錢"], a: 1 },
+                { q: "王要求全國的術士和迦勒底人做什麼？", options: ["只解夢就可以", "先說出夢的內容再解夢", "幫他打仗"], a: 1 },
+                { q: "當巴比倫的哲士無法說出夢的內容時，王下了什麼命令？", options: ["把他們趕出國家", "扣減他們的薪水", "滅絕巴比倫所有的哲士"], a: 2 },
+                { q: "但以理得知王的命令後，第一時間做了什麼？", options: ["立刻逃跑離境", "進去求王寬限，並與朋友祈求上帝", "帶領士兵反抗"], a: 1 },
+                { q: "上帝在什麼時候向但以理顯明了這個奧秘？", options: ["夜間的異象中", "正午的陽光下", "清晨的微風中"], a: 0 },
+                { q: "但以理讚美上帝說，智慧和什麼都屬乎祂？", options: ["能力", "財富", "壽命"], a: 0 },
+                { q: "王在夢中看見一個巨大的像，它的頭是用什麼做成的？", options: ["精金", "銀子", "銅"], a: 0 },
+                { q: "夢中那塊非人手鑿出來的石頭砸碎了大像，最後變成了什麼？", options: ["一座大山，充滿天下", "一堆碎沙", "一件精美的黃金藝術品"], a: 0 },
+                { q: "但以理解釋大像代表什麼？", options: ["世上的各個國度", "王的家人", "巴比倫的建築"], a: 0 },
+                { q: "第2課的主題教導我們學習什麼品格？", options: ["忠心", "智慧", "信心"], a: 1 }
+            ],
+            3: [
+                { q: "尼布甲尼撒王造了一個什麼像，要求所有人跪拜？", options: ["巨大的金像", "銀造的獅子像", "銅造的戰車像"], a: 0 },
+                { q: "聽到角、笛、琵琶等各種樂器的聲音時，所有人必須做什麼？", options: ["唱歌跳舞", "俯伏敬拜金像", "回家休息"], a: 1 },
+                { q: "不肯俯伏敬拜金像的人，會有什麼懲罰？", options: ["被趕出巴比倫", "必扔在烈火的窯中", "沒收所有財產"], a: 1 },
+                { q: "有哪三個猶大人拒絕敬拜王所立的金像？", options: ["彼得、雅各、約翰", "沙得拉、米煞、亞伯尼歌", "保羅、西拉、提摩太"], a: 1 },
+                { q: "他們對王說，他們所事奉的上帝能不能將他們從烈火中救出來？", options: ["不能", "必須靠運氣", "能將他們救出來"], a: 2 },
+                { q: "即使上帝不拯救他們，他們也決心怎樣？", options: ["假裝敬拜一下", "決不事奉王的神和拜金像", "向王求饒"], a: 1 },
+                { q: "尼布甲尼撒王聽後非常生氣，下令把火窯燒熱，比尋常熱幾倍？", options: ["三倍", "七倍", "十倍"], a: 1 },
+                { q: "王在火窯中看見有幾個人在火中遊行，沒有受傷？", options: ["兩個人", "三個人", "四個人"], a: 2 },
+                { q: "王形容火中多出來的那個人，相貌像誰？", options: ["天使", "神子", "國王"], a: 1 },
+                { q: "第3課的主題教導我們學習什麼品格？", options: ["決心", "謙卑", "忠心"], a: 2 }
+            ],
+            4: [
+                { q: "尼布甲尼撒王在宮裡安居平靜時，看見了一個什麼夢讓他懼怕？", options: ["天上掉下火球的夢", "一棵大樹被砍伐的夢", "海中出現怪獸的夢"], a: 1 },
+                { q: "夢中的這棵大樹非常高大，甚至怎樣？", options: ["高得頂天", "結滿了金蘋果", "樹根深達地底"], a: 0 },
+                { q: "夢中守望的聖者大聲呼叫要做什麼？", options: ["給大樹澆水", "伐倒這樹，砍下枝子", "把樹搬到另一個國家"], a: 1 },
+                { q: "但以理解釋夢中的大樹是指誰？", options: ["但以理自己", "尼布甲尼撒王", "巴比倫的敵人"], a: 1 },
+                { q: "王將會被趕出離開世人，與甚麼同居？", options: ["野地的獸", "天上的飛鳥", "海裡的魚"], a: 0 },
+                { q: "王要吃草如牛，經過幾個時期，直到他知道誰在人的國中掌權？", options: ["巴比倫的神", "地上的君王", "至高者(上帝)"], a: 2 },
+                { q: "夢境在過了幾個月後，就應驗在王身上？", options: ["一個月", "六個月", "十二個月"], a: 2 },
+                { q: "當王心裡驕傲地說這大巴比倫是他用大能建為京都時，發生了什麼事？", options: ["天空發出聲音宣告他的國位離開他了", "地震把王宮震毀了", "外敵立刻攻入王宮"], a: 0 },
+                { q: "日子滿足，王恢復聰明後，他做了什麼？", options: ["立刻報復敵人", "稱頌、讚美、尊敬至高者", "繼續驕傲地統治"], a: 1 },
+                { q: "第4課的主題教導我們學習什麼品格？", options: ["智慧", "謙卑", "堅持"], a: 1 }
+            ],
+            5: [
+                { q: "大流士王立了多少個總督治理通國？", options: ["五十個", "一百個", "一百二十個"], a: 2 },
+                { q: "總督之上有三個總長，為什麼王想立但以理治理通國？", options: ["因為他很有錢", "因為他有美好的靈性", "因為他力氣最大"], a: 1 },
+                { q: "其他總長和總督想要尋找但以理的誤失來控告他，結果怎樣？", options: ["找到很多錯誤", "找不到他的錯誤和過失", "發現他貪污金錢"], a: 1 },
+                { q: "這些人發現只能在什麼事情上找到控告但以理的把柄？", options: ["他管理的財務上", "他與上帝的律法上", "他的交友關係上"], a: 1 },
+                { q: "臣宰求王立下一條什麼禁令？", options: ["三十日內不准吃肉", "三十日內不准向王以外的神或人祈求", "三十日內必須每天工作"], a: 1 },
+                { q: "如果有人違反這條三十日內的禁令，會有什麼後果？", options: ["罰款十兩金子", "必扔在獅子坑中", "被趕出國家"], a: 1 },
+                { q: "但以理知道這禁令蓋了玉璽後，他做了什麼？", options: ["立刻逃跑躲藏", "回到家裡，向著耶路撒冷禱告", "停止禱告三十天"], a: 1 },
+                { q: "但以理每天祈禱幾次？", options: ["一次", "兩次", "三次"], a: 2 },
+                { q: "但以理在禱告時，姿勢是怎樣的？", options: ["站著舉手", "雙膝跪在上帝面前", "躺在床上"], a: 1 },
+                { q: "第5課的主題教導我們學習什麼品格？", options: ["決心", "謙卑", "堅持"], a: 2 }
+            ],
+            6: [
+                { q: "那些陷害但以理的人，聚集時發現但以理在做什麼？", options: ["在睡覺", "在王面前祈求", "在他上帝面前祈禱懇求"], a: 2 },
+                { q: "當王知道違反禁令的是但以理時，他心裡怎樣？", options: ["非常高興", "甚是愁煩，想救但以理", "毫不在乎"], a: 1 },
+                { q: "到了日落的時候，王有沒有辦法救但以理？", options: ["成功救了他", "無法救他，因為瑪代和波斯的例不能更改", "假裝忘記這件事"], a: 1 },
+                { q: "但以理被扔進獅子坑時，王對他說了什麼話？", options: ["你自作自受吧", "你所常事奉的上帝，他必救你", "我明天再來看看你"], a: 1 },
+                { q: "獅子坑的洞口是用什麼封住的？", options: ["木板", "大石頭", "鐵門"], a: 1 },
+                { q: "王回到宮裡，那晚過得怎麼樣？", options: ["舉行盛大宴會", "睡得非常香甜", "終夜禁食，睡不著覺"], a: 2 },
+                { q: "次日黎明，王急忙來到獅子坑，用什麼聲音呼叫但以理？", options: ["哀痛的聲音", "歡喜的聲音", "憤怒的聲音"], a: 0 },
+                { q: "但以理回答王說，上帝差遣使者做了什麼事？", options: ["打死了獅子", "封住獅子的口，叫獅子不傷我", "把獅子變成了綿羊"], a: 1 },
+                { q: "但以理從坑裡被拉上來，身上毫無傷損，是因為什麼？", options: ["因為他穿了盔甲", "因為獅子剛吃飽", "因為他信靠他的上帝"], a: 2 },
+                { q: "第6課的主題教導我們學習什麼品格？", options: ["信心", "智慧", "忠心"], a: 0 }
+            ]
+        };
+
+        // ==========================================
+        // 頁面導航與選擇週數邏輯
+        // ==========================================
+        function navigateTo(sectionId, isBack = false) {
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            const backBtn = document.getElementById('back-btn');
+            if(sectionId === 'main-menu' || sectionId === 'login-section') {
+                backBtn.style.display = 'none';
+                navigationHistory = []; 
+            } else {
+                backBtn.style.display = 'block';
+                if(!isBack && navigationHistory[navigationHistory.length - 1] !== sectionId) {
+                    navigationHistory.push(sectionId);
+                }
+            }
+            if(sectionId !== 'record-section' && mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
+        }
+
+        function goBack() {
+            navigationHistory.pop(); 
+            const prevPage = navigationHistory.length > 0 ? navigationHistory[navigationHistory.length - 1] : 'main-menu';
+            navigateTo(prevPage, true);
+        }
+
+        function returnToMenu() { navigateTo('main-menu'); }
+
+        function openWeekSelector(type) {
+            const container = document.getElementById('week-buttons-container');
+            container.innerHTML = '';
+            document.getElementById('week-title').innerText = type === 'quiz' ? '🧠 每日挑戰 (選擇週數)' : '🎤 背誦金句 (選擇週數)';
+            
+            for(let i = 1; i <= 6; i++) {
+                const btn = document.createElement('button');
+                const isUnlocked = i <= CURRENT_ACTIVE_WEEK;
+                const icon = isUnlocked ? (type === 'quiz' ? '📝' : '📖') : '🔒';
+                
+                if (isUnlocked) {
+                    btn.className = `mode-btn ${type === 'quiz' ? 'btn-green' : 'btn-blue'}`;
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週<br><span style="font-size:0.65em; font-weight:normal;">點擊開始</span></div>`;
+                    btn.onclick = () => { type === 'quiz' ? startQuiz(i) : startVerse(i); };
+                } else {
+                    btn.className = 'mode-btn btn-locked';
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週<br><span style="font-size:0.65em; font-weight:normal;">尚未開放</span></div>`;
+                    btn.onclick = () => { alert('🔒 這一週的挑戰尚未開放喔！請先完成之前的任務。'); };
+                }
+                container.appendChild(btn);
+            }
+            if (navigationHistory.length === 0) navigationHistory.push('main-menu');
+            navigateTo('week-select-section');
+        }
+
+        // ==========================================
+        // 核心驗證邏輯與即時通知接收
+        // ==========================================
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUserId = user.uid;
+                bindUserData(user.uid);
+                document.getElementById('logout-btn').style.display = 'block';
+                document.getElementById('status-bar').style.display = 'flex';
+                navigateTo('main-menu');
+            } else {
+                currentUserId = null;
+                currentUserDoc = null;
+                document.getElementById('logout-btn').style.display = 'none';
+                document.getElementById('status-bar').style.display = 'none';
+                navigateTo('login-section');
+            }
+        });
+
+        function loginUser() {
+            const username = document.getElementById('username').value.trim();
+            if(!username) return alert('請輸入 ID！');
+            auth.signInWithEmailAndPassword(`${username}@bible.local`, UNIVERSAL_PASSWORD)
+                .catch(() => alert('登入失敗：請確認學生 ID 是否正確。'));
+        }
+        function loginAsGuest() { auth.signInWithEmailAndPassword("guest@bible.local", UNIVERSAL_PASSWORD).catch(() => alert('訪客登入失敗')); }
+        function logoutUser() { auth.signOut(); }
+
+        function bindUserData(uid) {
+            db.collection("users").doc(uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    currentUserDoc = doc.data();
+                    document.getElementById('user-name').innerText = currentUserDoc.name || "小勇士";
+                    document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
+                    document.getElementById('admin-btn').style.display = currentUserDoc.role === 'admin' ? 'flex' : 'none';
+                    
+                    if (currentUserDoc.unread_notification && currentUserDoc.role !== 'admin') {
+                        showNotification(currentUserDoc.unread_notification);
+                        db.collection("users").doc(uid).update({
+                            unread_notification: firebase.firestore.FieldValue.delete()
+                        });
+                    }
+                } else {
+                    db.collection("users").doc(uid).set({
+                        name: document.getElementById('username').value.trim() || '學生',
+                        coins: 0, attendance_score: 0, performance_score: 0, total_correct: 0, total_incorrect: 0,
+                        role: 'student', last_play_date: new Date().toLocaleDateString()
+                    });
+                }
+            });
+        }
+
+        // ==========================================
+        // 錄音邏輯
+        // ==========================================
+        function startVerse(weekIndex) {
+            currentSelectedWeek = weekIndex;
+            document.getElementById('verse-week-label').innerText = `[第 ${weekIndex} 週]`;
+            document.getElementById('verse-text').innerText = versesData[weekIndex] || "本週金句導師尚在準備中...";
+            document.getElementById('record-theme-reminder').innerText = "💡 本週核心：" + weeklyThemes[weekIndex];
+            navigateTo('record-section');
+        }
+
+        let mediaRecorder; let audioChunks = []; let audioBlob = null;
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const playback = document.getElementById('audio-playback');
+                    playback.src = URL.createObjectURL(audioBlob);
+                    playback.style.display = 'block';
+                    document.getElementById('upload-record-btn').style.display = 'block';
+                };
+                mediaRecorder.start();
+                document.getElementById('start-record-btn').style.display = 'none';
+                document.getElementById('stop-record-btn').style.display = 'block';
+                document.getElementById('audio-playback').style.display = 'none';
+                document.getElementById('upload-record-btn').style.display = 'none';
+            } catch (err) { alert('請允許使用麥克風！'); }
+        }
+
+        function stopRecording() {
+            if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+            document.getElementById('stop-record-btn').style.display = 'none';
+            const btn = document.getElementById('start-record-btn');
+            btn.style.display = 'block'; btn.innerText = "🔄 重新錄製"; btn.style.background = "#e67e22"; btn.style.boxShadow = "0 4px 0 #d35400";
+        }
+
+        async function uploadRecording() {
+            if (!audioBlob || !currentUserId) return;
+            const btn = document.getElementById('upload-record-btn');
+            btn.innerText = "⏳ 上傳中..."; btn.disabled = true;
+
+            const studentName = (currentUserDoc ? currentUserDoc.name : '未知學生') + ` (第 ${currentSelectedWeek} 週)`;
+
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async function() {
+                try {
+                    await db.collection("recordings").add({
+                        uid: currentUserId, studentName: studentName, audioUrl: reader.result, 
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(), status: 'pending'
+                    });
+                    showNotification('✅ 錄音上傳成功！');
+                    goBack(); 
+                } catch (err) { alert('上傳失敗: ' + err.message); } 
+                finally { btn.innerText = "📤 上傳給導師批改"; btn.disabled = false; }
+            };
+        }
+
+        // ==========================================
+        // 問答邏輯
+        // ==========================================
+        let currentQuizIndex = 0;
+        let currentQuizList = [];
+
+        function startQuiz(weekIndex) {
+            currentSelectedWeek = weekIndex;
+            document.getElementById('quiz-week-label').innerText = `[第 ${weekIndex} 週]`;
+            document.getElementById('quiz-theme-reminder').innerText = "💡 本週核心：" + weeklyThemes[weekIndex];
+            
+            currentQuizList = quizDataAll[weekIndex] || [];
+            if(currentQuizList.length === 0) {
+                alert("這週的題目導師還在準備中喔！");
+                return;
+            }
+            currentQuizIndex = 0;
+            navigateTo('quiz-section');
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            if (currentQuizIndex >= currentQuizList.length) {
+                showNotification(`🎉 太棒了！你已完成第 ${currentSelectedWeek} 週的挑戰！`);
+                goBack(); 
+                return;
+            }
+
+            document.getElementById('quiz-progress').innerText = currentQuizIndex + 1 + " / " + currentQuizList.length;
+            const qData = currentQuizList[currentQuizIndex];
+            document.getElementById('question-text').innerText = (currentQuizIndex + 1) + ". " + qData.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            qData.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.innerText = optText; btn.className = "quiz-btn";
+                btn.onclick = () => evaluateAnswer(idx, qData.a);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function evaluateAnswer(selectedIdx, correctIdx) {
+            if(!currentUserId) return;
+            const userRef = db.collection("users").doc(currentUserId);
+            if (selectedIdx === correctIdx) {
+                userRef.update({ coins: firebase.firestore.FieldValue.increment(20), total_correct: firebase.firestore.FieldValue.increment(1) });
+                showNotification("✅ 答對了！獲得 20 金幣！");
+            } else {
+                userRef.update({ total_incorrect: firebase.firestore.FieldValue.increment(1) });
+                showNotification("❌ 答錯了，下一題繼續努力！", "#e74c3c");
+            }
+            currentQuizIndex++;
+            loadQuizQuestion();
+        }
+
+        // ==========================================
+        // 導師管理後台
+        // ==========================================
+        function loadAdminPanel() {
+            navigateTo('admin-section');
+            const recordBody = document.getElementById('admin-recordings-body');
+            recordBody.innerHTML = "<tr><td colspan='3'>載入中...</td></tr>";
+            db.collection("recordings").where("status", "==", "pending").onSnapshot(snapshot => {
+                recordBody.innerHTML = snapshot.empty ? '<tr><td colspan="3" style="color:#7f8c8d;">目前沒有需要批改的錄音。</td></tr>' : '';
+                snapshot.forEach(doc => {
+                    const data = doc.data(); const tr = document.createElement('tr');
+                    tr.innerHTML = `<td><strong>${data.studentName}</strong></td>
+                                    <td><audio controls src="${data.audioUrl}" style="height:35px; width:120px;"></audio></td>
+                                    <td><button class="score-adjust-btn" style="background:#27ae60;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'approved')">✅ 及格</button>
+                                        <button class="score-adjust-btn" style="background:#e74c3c;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'rejected')">❌ 退回</button></td>`;
+                    recordBody.appendChild(tr);
+                });
+            });
+
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = "<tr><td colspan='5'>資料同步中...</td></tr>";
+            db.collection("users").where("role", "!=", "admin").onSnapshot((qs) => {
+                tbody.innerHTML = "";
+                qs.forEach((doc) => {
+                    const id = doc.id; const d = doc.data(); const tr = document.createElement('tr');
+                    tr.innerHTML = `<td><strong>${d.name}</strong><button class="rename-btn" onclick="renameStudent('${id}', '${d.name}')">✏️</button><br><span style="font-size:0.7em; color:#95a5a6;">${id}</span></td>
+                                    <td><span style="color:#2980b9; font-weight:bold;">${d.attendance_score || 0}</span></td>
+                                    <td><span style="color:#e67e22; font-weight:bold;">${d.performance_score || 0}</span></td>
+                                    <td><strong style="color:#f39c12;">${d.coins || 0}</strong></td>
+                                    <td><button class="score-adjust-btn" onclick="adjustStudentMetric('${id}', 'attendance_score', 10)">+10 出席</button>
+                                        <button class="score-adjust-btn" onclick="adjustStudentMetric('${id}', 'performance_score', 5)">+5 表現</button></td>`;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+        function renameStudent(id, curName) {
+            const newName = prompt("請輸入真實姓名：", curName);
+            if (newName && newName.trim()) db.collection("users").doc(id).update({ name: newName.trim() }).catch(e => alert("更新失敗"));
+        }
+        
+        function reviewRecording(rId, uId, status) {
+            db.collection("recordings").doc(rId).update({ status: status });
+            if (status === 'approved') { 
+                db.collection("users").doc(uId).update({ 
+                    coins: firebase.firestore.FieldValue.increment(50),
+                    unread_notification: "🎉 你的錄音已被導師批改為及格，獲得 50 金幣！"
+                }); 
+                showNotification('批改完成！已發放 50 金幣並通知學生。'); 
+            } else {
+                db.collection("users").doc(uId).update({ 
+                    unread_notification: "⚠️ 你的錄音已被導師退回，請重新嘗試一次喔！"
+                });
+                showNotification('已退回錄音並發送通知給該學生。', '#e74c3c');
+            }
+        }
+        
+        function adjustStudentMetric(id, field, inc) {
+            const typeName = field === 'attendance_score' ? '出席分' : '表現分';
+            db.collection("users").doc(id).update({ 
+                [field]: firebase.firestore.FieldValue.increment(inc), 
+                coins: firebase.firestore.FieldValue.increment(inc),
+                unread_notification: `🎉 導師剛剛為你加上了 ${inc} 分的${typeName}！`
+            }).then(() => showNotification("加分並通知成功！"));
+        }
+    </script>
+</body>
+</html>
