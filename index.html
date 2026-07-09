@@ -37,7 +37,7 @@
         .app-header {
             width: 100%;
             background: rgba(255, 255, 255, 0.95);
-            padding: 15px 20px;
+            padding: 12px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
@@ -46,6 +46,7 @@
             top: 0;
             z-index: 100;
             box-sizing: border-box;
+            min-height: 65px;
         }
 
         .back-btn, .logout-btn {
@@ -62,6 +63,22 @@
         }
         .back-btn { left: 15px; display: none; }
         .logout-btn { right: 15px; display: none; background: #ff7675; color: white; }
+        
+        /* 標題置中設定 */
+        .header-titles {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .sub-title {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            font-weight: bold;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+        }
         .app-title { margin: 0; font-size: 1.3em; font-weight: 900; color: #34495e; }
 
         /* 中間主要內容區 */
@@ -103,6 +120,7 @@
         }
         .btn-blue { background: linear-gradient(45deg, var(--blue), var(--blue-dark)); box-shadow: 0 4px 0 #2980b9; }
         .btn-green { background: linear-gradient(45deg, var(--green), var(--green-dark)); box-shadow: 0 4px 0 #27ae60; color: #111; }
+        .btn-orange { background: linear-gradient(45deg, #f39c12, #e67e22); box-shadow: 0 4px 0 #d35400; color: white; }
         .btn-admin { background: #2c3e50; box-shadow: 0 4px 0 #1a252f; display: none; }
         
         /* 鎖定狀態按鈕樣式 */
@@ -184,9 +202,13 @@
         <span id="toast-msg"></span>
     </div>
 
+    <!-- 置中頂部導航列 -->
     <header class="app-header">
         <button id="back-btn" class="back-btn" onclick="goBack()">◀ 返回</button>
-        <h1 class="app-title">🔥🦁火焰與獅子：勇者傳說</h1>
+        <div class="header-titles">
+            <div class="sub-title">聖公會主誕堂暑期 2026</div>
+            <h1 class="app-title">🔥🦁火焰與獅子：勇者傳說</h1>
+        </div>
         <button id="logout-btn" class="logout-btn" onclick="logoutUser()">登出</button>
     </header>
 
@@ -213,30 +235,22 @@
             <div class="menu-container">
                 <button class="mode-btn btn-blue" onclick="openWeekSelector('verse')">
                     <span style="font-size:1.8em; margin-right:15px;">🎤</span> 
-                    <div>背誦聖經金句<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">錄音上傳領取獎勵</span></div>
+                    <div>背誦聖經金句<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">錄音上傳領取獎勵 (每週3次)</span></div>
                 </button>
                 <button class="mode-btn btn-green" onclick="openWeekSelector('quiz')">
                     <span style="font-size:1.8em; margin-right:15px;">🧠</span> 
-                    <div>勇者問答挑戰<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">每週精選聖經問答</span></div>
+                    <div>勇者問答挑戰<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">每週精選聖經問答 (每週2次)</span></div>
+                </button>
+                <!-- 新增：親子IQ題 -->
+                <button class="mode-btn btn-orange" onclick="openWeekSelector('iq')">
+                    <span style="font-size:1.8em; margin-right:15px;">👨‍👩‍👧‍👦</span> 
+                    <div>親子互動與IQ題<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">親子共樂時光 (無限次數)</span></div>
                 </button>
                 
                 <button id="admin-btn" class="mode-btn btn-admin" onclick="loadAdminPanel()">
                     <span style="font-size:1.8em; margin-right:15px;">📊</span> 
                     <div>導師管理台<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">批改錄音與進度追蹤</span></div>
                 </button>
-            </div>
-
-            <!-- 主選單下方的主題列表卡片 -->
-            <div class="game-card" style="margin-top: 25px; text-align: left; padding: 20px 25px;">
-                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; font-size: 1.2em; text-align: center;">🌟 暑期聖經班主題 🌟</h3>
-                <div style="font-size: 1.05em; line-height: 1.9; color: #34495e; font-weight: bold;">
-                    <div><span style="color:#f39c12; margin-right:8px;">第1週</span> 🚫不向偶像低頭【決心】</div>
-                    <div><span style="color:#f39c12; margin-right:8px;">第2週</span> 🔮揭開異夢奧祕【智慧】</div>
-                    <div><span style="color:#f39c12; margin-right:8px;">第3週</span> 🔥火窯中的朋友【忠心】</div>
-                    <div><span style="color:#f39c12; margin-right:8px;">第4週</span> 😤驕傲人的結局【謙卑】</div>
-                    <div><span style="color:#f39c12; margin-right:8px;">第5週</span> 🙏不停止的禱告【堅持】</div>
-                    <div><span style="color:#f39c12; margin-right:8px;">第6週</span> 🦁封住獅子的口【信心】</div>
-                </div>
             </div>
         </div>
 
@@ -253,9 +267,8 @@
         <!-- ================= 頁面：背金句 ================= -->
         <div id="record-section" class="page">
             <div class="game-card">
-                <h2 class="game-title" style="color: #2980b9;">🎤 <span id="verse-week-label"></span> 背誦金句</h2>
+                <h2 class="game-title" style="color: #2980b9;">🎤 背誦金句</h2>
                 <div class="verse-box">
-                    <p style="margin:0 0 5px 0; font-size:0.8em; color:#7f8c8d; font-weight: bold;">本週核心金句：</p>
                     <strong id="verse-text" style="color: #2c3e50; transition: all 0.3s;">載入中...</strong>
                 </div>
                 
@@ -272,7 +285,7 @@
         <!-- ================= 頁面：問答挑戰 ================= -->
         <div id="quiz-section" class="page">
             <div class="game-card">
-                <h2 class="game-title" style="color: #27ae60;">🧠 <span id="quiz-week-label"></span> 問答挑戰</h2>
+                <h2 class="game-title" style="color: #27ae60;">🧠 問答挑戰</h2>
                 <div style="font-weight:bold; color:#7f8c8d; margin-bottom: 18px; font-size: 1.1em;">
                     進度：第 <span id="quiz-progress" style="color:#27ae60; font-size:1.3em;">1</span> 題
                 </div>
@@ -282,6 +295,17 @@
                 </div>
 
                 <div id="quiz-theme-reminder" class="theme-reminder"></div>
+            </div>
+        </div>
+
+        <!-- ================= 頁面：親子IQ題 ================= -->
+        <div id="iq-section" class="page">
+            <div class="game-card">
+                <h2 class="game-title" style="color: #e67e22;">👨‍👩‍👧‍👦 親子互動與IQ題</h2>
+                <p style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px;">本環節沒有金幣獎勵，請與家人一起思考答案，並完成本週的小實踐吧！</p>
+                <div id="iq-container" style="text-align: left;">
+                    <!-- 題目與祈禱建議將由 JavaScript 動態生成 -->
+                </div>
             </div>
         </div>
 
@@ -325,13 +349,31 @@
     </div>
 
     <script>
-        // ==========================================
-        // 🔧 【全域設定】導師每週需更改此數字 (1 至 6)
-        // ==========================================
-        const CURRENT_ACTIVE_WEEK = 1;
-
         let currentSelectedWeek = 1; 
         let navigationHistory = []; 
+
+        // ==========================================
+        // 每週開放日期設定 (自動解鎖依據)
+        // ==========================================
+        const weekDatesConfig = {
+            1: "12/7", 
+            2: "19/7", 
+            3: "26/7", 
+            4: "2/8", 
+            5: "9/8", 
+            6: "16/8"
+        };
+
+        // 自動判斷該週是否開放的邏輯
+        function isWeekUnlocked(week) {
+            if (week === 1) return true; // 第 1 週預先開放
+            const now = new Date();
+            const dateStr = weekDatesConfig[week];
+            const [day, month] = dateStr.split('/');
+            // JavaScript 的 Date 月份是 0 起算 (所以 7月 是 6)
+            const targetDate = new Date(2026, parseInt(month) - 1, parseInt(day));
+            return now >= targetDate;
+        }
 
         // ==========================================
         // 1. Firebase 初始化設置
@@ -363,15 +405,15 @@
         }
 
         // ==========================================
-        // 六週的主題設定
+        // 七週的主題設定 (已去前綴)
         // ==========================================
         const weeklyThemes = {
-            1: "第1週：🚫不向偶像低頭【決心】",
-            2: "第2週：🔮揭開異夢奧祕【智慧】",
-            3: "第3週：🔥火窯中的朋友【忠心】",
-            4: "第4週：😤驕傲人的結局【謙卑】",
-            5: "第5週：🙏不停止的禱告【堅持】",
-            6: "第6週：🦁封住獅子的口【信心】"
+            1: "🚫不向偶像低頭【決心】",
+            2: "🔮揭開異夢奧祕【智慧】",
+            3: "🔥火窯中的朋友【忠心】",
+            4: "😤驕傲人的結局【謙卑】",
+            5: "🙏不停止的禱告【堅持】",
+            6: "🦁封住獅子的口【信心】"
         };
 
         // ==========================================
@@ -453,7 +495,7 @@
             6: [
                 { q: "那些陷害但以理的人，聚集時發現但以理在做什麼？", options: ["在睡覺", "在王面前祈求", "在他上帝面前祈禱懇求"], a: 2 },
                 { q: "當王知道違反禁令的是但以理時，他心裡怎樣？", options: ["非常高興", "甚是愁煩，想救但以理", "毫不在乎"], a: 1 },
-                { q: "到了日落的時候，王有沒有辦法救但以理？", options: ["成功救了他", "無法救他，因為瑪代和波斯的例不能更改", "假裝忘記這件事"], a: 1 },
+                { q: "到了日落的時候，王有沒有辦法救但以理？", options: ["成功救ِمض了他", "無法救他，因為瑪代和波斯的例不能更改", "假裝忘記這件事"], a: 1 },
                 { q: "但以理被扔進獅子坑時，王對他說了什麼話？", options: ["你自作自受吧", "你所常事奉的上帝，他必救你", "我明天再來看看你"], a: 1 },
                 { q: "獅子坑的洞口是用什麼封住的？", options: ["木板", "大石頭", "鐵門"], a: 1 },
                 { q: "王回到宮裡，那晚過得怎麼樣？", options: ["舉行盛大宴會", "睡得非常香甜", "終夜禁食，睡不著覺"], a: 2 },
@@ -462,6 +504,90 @@
                 { q: "但以理從坑裡被拉上來，身上毫無傷損，是因為什麼？", options: ["因為他穿了盔甲", "因為獅子剛吃飽", "因為他信靠他的上帝"], a: 2 },
                 { q: "第6課的主題教導我們學習什麼品格？", options: ["信心", "智慧", "忠心"], a: 0 }
             ]
+        };
+
+        // ==========================================
+        // 每週親子 IQ 題庫設定 (共 36 題，每週 6 題)
+        // ==========================================
+        const iqDataAll = {
+            1: [
+                { q: "冰塊最想做什麼事？", a: "答案是退伍 ，因為他當冰很久了。" },
+                { q: "小明一邊刷牙，一邊大聲唱歌，他是怎麼做到的？", a: "他刷的是假牙。" },
+                { q: "有一個字，大家看到它都會唸錯，那是哪個字？", a: "「錯」字。" },
+                { q: "字典裡哪兩個字住得最遠？", a: "第一頁的字和最後一頁的字。" },
+                { q: "小明把卷交上去，考官給了他零分，但他爸爸媽媽卻很高興，為什麼？", a: "因為那是「路試」（車牌路試），零分代表無大錯誤，及格！" },
+                { q: "哪一個月有二十八天？", a: "每個月都有。" }
+            ],
+            2: [
+                { q: "弟弟把手錶丟進水裡，拿出來竟然還在走，為什麼？", a: "因為是弟弟在走，不是手錶在走。" },
+                { q: "想像你坐在一艘快要沉沒的船上，周圍都是鯊魚，你要怎麼辦？", a: "停止想像。" },
+                { q: "鐵棒和木棒打在頭上，哪個最痛？", a: "頭最痛。" },
+                { q: "小明跟著爸爸學游泳，游得很好，但他卻從來沒在水裡睜開過眼睛，為什麼？", a: "因為他是盲人。" },
+                { q: "一隻公雞在屋頂上下了一顆蛋，蛋會往左邊滾還是右邊滾？", a: "公雞不會生蛋。" },
+                { q: "小華看書時從來不開燈，但牠看得很清楚，為什麼？", a: "因為他在白天看。" }
+            ],
+            3: [
+                { q: "煮一個雞蛋需要五分鐘，煮五個雞蛋需要幾分鐘？", a: "五分鐘（一起煮）。" },
+                { q: "小華在雨中走了半天，衣服全濕了，頭髮卻一根沒濕，為什麼？", a: "因為他是光頭。" },
+                { q: "哪一種鳥飛得最高？", a: "坐在飛機裡的鳥。" },
+                { q: "大象的左邊耳朵長得最像哪裡？", a: "牠的右邊耳朵。" },
+                { q: "爺爺戴著老花眼鏡看報紙，卻連一個字也看不到，為什麼？", a: "因為天黑了，他沒有開燈。" },
+                { q: "爸爸把車子停在路邊，沒有鎖車門，為什麼小偷走過來卻不偷？", a: "因為爸爸就坐在車裡面。" }
+            ],
+            4: [
+                { q: "小明吃蘋果時，最怕在裡面咬到幾條蟲？", a: "半條（代表另外半條已經吃下去了）。" },
+                { q: "弟弟不小心吞下一枚硬幣，為什麼他一點都不擔心？", a: "因為那是巧克力硬幣。" },
+                { q: "妹妹用一根手指頭，就把一輛正在行駛的車攔了下來，她是怎麼辦到的？", a: "她在攔的士（計程車）。" },
+                { q: "小明上網買了一件衣服，試穿後發現太大了，但他沒有退貨，衣服卻在一天后變得剛好合身，為什麼？", a: "因為那是送給爸爸的生日禮物。" },
+                { q: "弟弟把一隻活生生的螃蟹放進熱水裡，五分鐘後拿出來，螃蟹竟然還是青綠色的，為什麼？", a: "因為沒有開火，水變成溫暖了。" },
+                { q: "媽媽在客廳看電視，突然停電了，她沒有點蠟燭也沒有開電筒，卻能繼續看完整個節目，為什麼？", a: "媽媽用手機（或平板電腦）看電視。" }
+            ],
+            5: [
+                { q: "弟弟和妹妹一起去公園玩沙，妹妹的鞋子裡裝滿了沙，弟弟的鞋子卻一粒沙也沒有，為什麼？", a: "因為弟弟沒穿鞋子（赤腳）。" },
+                { q: "弟弟把一顆網球用力扔出去，它沒有碰到任何東西，飛了一段距離後，自動原路回到弟弟的腳邊，為什麼？", a: "弟弟是向著正上方（天空）扔出去的。" },
+                { q: "媽媽買了一盒十二隻的雞蛋，回家的路上不小心摔了一跤，盒子摔扁了，但打開一看，竟然一隻雞蛋也沒有碎，為什麼？", a: "因為那是一盒熟雞蛋（茶葉蛋）。" },
+                { q: "妹妹把手伸進裝滿糖果的罐子裡，抓了一大把，但她的手拿出來時，手裡一粒糖都沒有，為什麼？", a: "因為妹妹的手太胖，卡在罐子口拿不出來，只好把糖放手了。" },
+                { q: "小明在看一本漫畫書，看著看著，有一頁他怎麼看也看不懂，但他把書轉了90度就立刻看懂了，為什麼？", a: "因為那一頁畫的是橫向的迷宮地圖。" },
+                { q: "兩隻小鳥在樹上唱歌，一隻面向東邊，一隻面向西邊，牠們不用轉頭，就能清清楚楚看到對方的眼睛，為什麼？", a: "因為牠們本來就是面對面站著的。" }
+            ],
+            6: [
+                { q: "小華看著手錶，發現秒針一動不動，但他知道手錶沒有壞，為什麼？", a: "因為這是一隻沒有秒針的手錶（只有時針和分針）。" },
+                { q: "小明寫錯了一個字，他沒有用橡皮擦，也沒有用塗改液，一秒鐘就把錯字變不見了，怎麼辦到？", a: "他在平板電腦上寫字，按了「復原（Undo）」鍵。" },
+                { q: "妹妹過生日，蛋糕上插了 6 支蠟燭。她吹滅了 4 支，最後蛋糕上還剩下幾支蠟燭？", a: "剩下 4 支（沒吹滅的 2 支燒光融化了）。" },
+                { q: "把大象放進冰箱需要幾個步驟？", a: "三個（打開冰箱，放進大象，關上冰箱）。" },
+                { q: "接著把長頸鹿放進冰箱需要幾個步驟？", a: "四個（打開冰箱，拿出大象，放進長頸鹿，關上冰箱）。" },
+                { q: "森林裡開動物大會，誰沒有去參加？", a: "長頸鹿（因為還在冰箱裡）。" }
+            ]
+        };
+
+        // ==========================================
+        // 每週親子建議及祈禱設定 (1-6 週)
+        // ==========================================
+        const familyDevotionData = {
+            1: {
+                advice: "與孩子一起訂立一個本週的「小目標」（例如：每天減少看螢幕 15 分鐘、主動幫忙做一件家務），並互相鼓勵，學習但以理不被外界誘惑的決心。",
+                prayer: "親愛的天父，求祢賜給我們一家人像但以理一樣的決心，在面對誘惑和困難時，依然能堅定地選擇做正確的事。阿們。"
+            },
+            2: {
+                advice: "家長可以分享一個最近遇到的小難題，邀請孩子一起動動腦筋給予建議。讓孩子明白，遇到不懂的事情時，可以像但以理一樣先安靜下來尋求上帝的智慧。",
+                prayer: "親愛的天父，讚美祢是賜智慧的神。求祢幫助我們在遇到難題時不慌張，懂得向祢祈求，並賜給我們聰明去解決問題。阿們。"
+            },
+            3: {
+                advice: "與孩子討論什麼是「真正的朋友」。可以一起製作一張小卡片，送給一位在困難中曾經幫助過自己的好朋友，學習沙得拉、米煞、亞伯尼歌彼此支持的忠心。",
+                prayer: "親愛的天父，謝謝祢無論在什麼環境下都與我們同在。求祢幫助我們對祢忠心，也教導我們成為別人生命中互相支持的好朋友。阿們。"
+            },
+            4: {
+                advice: "在晚餐或睡前，全家人輪流說出對方今天做得好的一件事，並互相說聲謝謝。學習看見別人的優點，明白我們擁有的一切能力都是上帝的恩典。",
+                prayer: "親愛的天父，求祢保守我們的心，不驕傲自大。幫助我們學會欣賞身邊的人，並時刻感恩祢賜給我們的一切。阿們。"
+            },
+            5: {
+                advice: "選擇一件簡單又有益的小事（例如：每天對家人說早安、睡前一起背一句金句），全家約定在這星期內堅持每天都做，體驗不停止的力量。",
+                prayer: "親愛的天父，求祢加添我們的力量，讓我們在做好事和祈禱上都能像但以理一樣堅持到底，不輕易放棄。阿們。"
+            },
+            6: {
+                advice: "家長與孩子互相分享一件自己心裡害怕的事情（心中的「獅子」），然後牽著手為彼此祈禱，將擔憂交給上帝，學習對神有完全的信心。",
+                prayer: "親愛的天父，當我們感到害怕或面對困難時，求祢賜給我們像但以理一樣的信心，相信祢會差遣使者保護我們。阿們。"
+            }
         };
 
         // ==========================================
@@ -492,24 +618,51 @@
 
         function returnToMenu() { navigateTo('main-menu'); }
 
+        // 動態生成帶有「次數限制」與「自動解鎖」的選單
         function openWeekSelector(type) {
             const container = document.getElementById('week-buttons-container');
             container.innerHTML = '';
-            document.getElementById('week-title').innerText = type === 'quiz' ? '🧠 每日挑戰 (選擇週數)' : '🎤 背誦金句 (選擇週數)';
             
+            let titlePrefix = '';
+            if(type === 'quiz') titlePrefix = '🧠 每日挑戰';
+            else if(type === 'verse') titlePrefix = '🎤 背誦金句';
+            else if(type === 'iq') titlePrefix = '👨‍👩‍👧‍👦 親子互動與IQ題';
+            document.getElementById('week-title').innerText = `${titlePrefix} (選擇週數)`;
+            
+            // 設定各模式的最大次數
+            const maxAttempts = type === 'quiz' ? 2 : 3;
+
             for(let i = 1; i <= 6; i++) {
                 const btn = document.createElement('button');
-                const isUnlocked = i <= CURRENT_ACTIVE_WEEK;
-                const icon = isUnlocked ? (type === 'quiz' ? '📝' : '📖') : '🔒';
                 
-                if (isUnlocked) {
-                    btn.className = `mode-btn ${type === 'quiz' ? 'btn-green' : 'btn-blue'}`;
-                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週<br><span style="font-size:0.65em; font-weight:normal;">點擊開始</span></div>`;
-                    btn.onclick = () => { type === 'quiz' ? startQuiz(i) : startVerse(i); };
-                } else {
+                // 檢查是否達到解鎖日期
+                const isUnlocked = isWeekUnlocked(i);
+                const weekDateLabel = weekDatesConfig[i];
+                
+                const usedAttempts = currentUserDoc ? (currentUserDoc[`${type}_attempts_${i}`] || 0) : 0;
+                const remaining = Math.max(0, maxAttempts - usedAttempts);
+                
+                if (!isUnlocked) {
+                    // 未到開放日期
                     btn.className = 'mode-btn btn-locked';
-                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週<br><span style="font-size:0.65em; font-weight:normal;">尚未開放</span></div>`;
-                    btn.onclick = () => { alert('🔒 這一週的挑戰尚未開放喔！請先完成之前的任務。'); };
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">🔒</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.65em; font-weight:normal;">將於 ${weekDateLabel} 開放</span></div>`;
+                    btn.onclick = () => { alert(`🔒 這一週的挑戰將於 ${weekDateLabel} 自動開放喔！`); };
+                } else if (type === 'iq') {
+                    // 親子IQ題 (無限次數，無金幣)
+                    btn.className = 'mode-btn btn-orange';
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">👨‍👩‍👧‍👦</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.7em; font-weight:bold; color:#fffdf5;">與家人一起動動腦筋</span></div>`;
+                    btn.onclick = () => { startIQ(i); };
+                } else if (remaining <= 0 && currentUserDoc && currentUserDoc.role !== 'admin') {
+                    // 次數用盡時按鈕變灰
+                    btn.className = 'mode-btn btn-locked';
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">⏳</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.65em; font-weight:bold; color:#e74c3c;">次數已用盡 (${maxAttempts}/${maxAttempts})</span></div>`;
+                    btn.onclick = () => { alert(`⏳ 這週的次數已經用完囉！下週繼續努力！`); };
+                } else {
+                    // 正常可遊玩狀態
+                    const icon = type === 'quiz' ? '📝' : '📖';
+                    btn.className = `mode-btn ${type === 'quiz' ? 'btn-green' : 'btn-blue'}`;
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.7em; font-weight:bold; color:#ffeaa7;">剩餘次數：${remaining} 次</span></div>`;
+                    btn.onclick = () => { type === 'quiz' ? startQuiz(i) : startVerse(i); };
                 }
                 container.appendChild(btn);
             }
@@ -542,7 +695,6 @@
             auth.signInWithEmailAndPassword(`${username}@bible.local`, UNIVERSAL_PASSWORD)
                 .catch(() => alert('登入失敗：請確認學生 ID 是否正確。'));
         }
-        function loginAsGuest() { auth.signInWithEmailAndPassword("guest@bible.local", UNIVERSAL_PASSWORD).catch(() => alert('訪客登入失敗')); }
         function logoutUser() { auth.signOut(); }
 
         function bindUserData(uid) {
@@ -570,16 +722,16 @@
         }
 
         // ==========================================
-        // 錄音邏輯
+        // 錄音邏輯 (含次數計算)
         // ==========================================
         function startVerse(weekIndex) {
             currentSelectedWeek = weekIndex;
-            document.getElementById('verse-week-label').innerText = `[第 ${weekIndex} 週]`;
+            
             // 設定經文文字並清除可能殘留的隱藏樣式
             document.getElementById('verse-text').innerText = versesData[weekIndex] || "本週金句導師尚在準備中...";
             document.getElementById('verse-text').style.color = '#2c3e50';
             
-            document.getElementById('record-theme-reminder').innerText = "💡 本週核心：" + weeklyThemes[weekIndex];
+            document.getElementById('record-theme-reminder').innerText = "💡" + weeklyThemes[weekIndex];
             navigateTo('record-section');
         }
 
@@ -599,7 +751,7 @@
                 };
                 mediaRecorder.start();
                 
-                // 【核心改動】錄音開始，隱藏經文提示
+                // 錄音開始，隱藏經文提示
                 const verseEl = document.getElementById('verse-text');
                 verseEl.innerText = "🎙️ 錄音中，請憑記憶背誦...";
                 verseEl.style.color = "#e74c3c";
@@ -614,7 +766,7 @@
         function stopRecording() {
             if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
             
-            // 【核心改動】錄音結束，重新顯示經文，讓學生可以對答案
+            // 錄音結束，重新顯示經文，讓學生可以對答案
             const verseEl = document.getElementById('verse-text');
             verseEl.innerText = versesData[currentSelectedWeek];
             verseEl.style.color = "#2c3e50";
@@ -626,6 +778,14 @@
 
         async function uploadRecording() {
             if (!audioBlob || !currentUserId) return;
+
+            const maxAttempts = 3;
+            const usedAttempts = currentUserDoc ? (currentUserDoc[`verse_attempts_${currentSelectedWeek}`] || 0) : 0;
+            if (usedAttempts >= maxAttempts && currentUserDoc.role !== 'admin') {
+                alert("本週錄音上傳次數已用完！");
+                return;
+            }
+
             const btn = document.getElementById('upload-record-btn');
             btn.innerText = "⏳ 上傳中..."; btn.disabled = true;
 
@@ -639,23 +799,49 @@
                         uid: currentUserId, studentName: studentName, audioUrl: reader.result, 
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(), status: 'pending'
                     });
+                    
+                    // 成功上傳後才扣除金句次數
+                    if(currentUserDoc.role !== 'admin') {
+                        await db.collection("users").doc(currentUserId).update({
+                            [`verse_attempts_${currentSelectedWeek}`]: firebase.firestore.FieldValue.increment(1)
+                        });
+                    }
+
                     showNotification('✅ 錄音上傳成功！');
-                    goBack(); 
+                    openWeekSelector('verse'); // 重新整理並返回選單，更新次數顯示
                 } catch (err) { alert('上傳失敗: ' + err.message); } 
                 finally { btn.innerText = "📤 上傳給導師批改"; btn.disabled = false; }
             };
         }
 
         // ==========================================
-        // 問答邏輯
+        // 問答邏輯 (含次數計算與防止刷新刷金幣)
         // ==========================================
         let currentQuizIndex = 0;
         let currentQuizList = [];
 
         function startQuiz(weekIndex) {
+            const maxAttempts = 2;
+            const usedAttempts = currentUserDoc ? (currentUserDoc[`quiz_attempts_${weekIndex}`] || 0) : 0;
+            
+            if (usedAttempts >= maxAttempts && currentUserDoc.role !== 'admin') {
+                alert("這週的問答挑戰次數已經用完囉！");
+                return;
+            }
+            
+            // 確認對話框與馬上寫入 DB 扣除機會
+            if(currentUserDoc.role !== 'admin') {
+                if(!confirm(`開始挑戰將會扣除 1 次機會 (本週剩餘 ${maxAttempts - usedAttempts} 次)。\n請確保網路穩定，確定要開始嗎？`)) {
+                    return; // 學生取消
+                }
+                
+                db.collection("users").doc(currentUserId).update({
+                    [`quiz_attempts_${weekIndex}`]: firebase.firestore.FieldValue.increment(1)
+                });
+            }
+
             currentSelectedWeek = weekIndex;
-            document.getElementById('quiz-week-label').innerText = `[第 ${weekIndex} 週]`;
-            document.getElementById('quiz-theme-reminder').innerText = "💡 本週核心：" + weeklyThemes[weekIndex];
+            document.getElementById('quiz-theme-reminder').innerText = "💡" + weeklyThemes[weekIndex];
             
             currentQuizList = quizDataAll[weekIndex] || [];
             if(currentQuizList.length === 0) {
@@ -670,7 +856,7 @@
         function loadQuizQuestion() {
             if (currentQuizIndex >= currentQuizList.length) {
                 showNotification(`🎉 太棒了！你已完成第 ${currentSelectedWeek} 週的挑戰！`);
-                goBack(); 
+                openWeekSelector('quiz'); // 重新整理週數選單以更新次數
                 return;
             }
 
@@ -704,7 +890,93 @@
         }
 
         // ==========================================
-        // 導師管理後台 (引入三級評分系統)
+        // 親子IQ題及每週建議與祈禱邏輯
+        // ==========================================
+        function startIQ(weekIndex) {
+            currentSelectedWeek = weekIndex;
+            
+            const iqList = iqDataAll[weekIndex] || [];
+            const devotion = familyDevotionData[weekIndex];
+            const container = document.getElementById('iq-container');
+            container.innerHTML = '';
+
+            if (iqList.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#7f8c8d; font-weight:bold; margin-top:20px;">這週的親子內容還在準備中喔！</p>';
+            } else {
+                // 渲染 IQ 題
+                iqList.forEach((item, index) => {
+                    const qBox = document.createElement('div');
+                    qBox.style.marginBottom = '20px';
+                    qBox.style.padding = '15px';
+                    qBox.style.background = '#fffdf5';
+                    qBox.style.borderRadius = '10px';
+                    qBox.style.borderLeft = '5px solid #f39c12';
+                    qBox.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
+                    
+                    const qText = document.createElement('div');
+                    qText.innerHTML = `<strong style="color:#d35400;">Q${index + 1}:</strong> <span style="font-size:1.1em; color:#2c3e50;">${item.q}</span>`;
+                    qText.style.marginBottom = '12px';
+                    
+                    const ansBtn = document.createElement('button');
+                    ansBtn.innerText = '👀 查看答案';
+                    ansBtn.className = 'action-btn';
+                    ansBtn.style.background = '#f39c12';
+                    ansBtn.style.boxShadow = '0 4px 0 #d35400';
+                    ansBtn.style.padding = '12px';
+                    ansBtn.style.fontSize = '1em';
+                    ansBtn.style.marginTop = '0';
+                    
+                    const aText = document.createElement('div');
+                    aText.innerHTML = `<strong>答案：</strong>${item.a}`;
+                    aText.style.marginTop = '10px';
+                    aText.style.color = '#27ae60';
+                    aText.style.fontSize = '1.1em';
+                    aText.style.fontWeight = 'bold';
+                    aText.style.display = 'none';
+                    aText.style.padding = '10px';
+                    aText.style.background = '#e8f8f5';
+                    aText.style.borderRadius = '8px';
+                    
+                    ansBtn.onclick = () => {
+                        aText.style.display = 'block';
+                        ansBtn.style.display = 'none';
+                    };
+                    
+                    qBox.appendChild(qText);
+                    qBox.appendChild(ansBtn);
+                    qBox.appendChild(aText);
+                    container.appendChild(qBox);
+                });
+                
+                // 渲染本週建議與祈禱
+                if (devotion) {
+                    const devBox = document.createElement('div');
+                    devBox.style.marginTop = '30px';
+                    devBox.style.padding = '20px';
+                    devBox.style.background = '#f0f8ff';
+                    devBox.style.borderRadius = '15px';
+                    devBox.style.borderLeft = '5px solid #2980b9';
+                    devBox.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
+                    devBox.innerHTML = `
+                        <h3 style="color:#2980b9; margin-top:0; margin-bottom:15px; border-bottom:2px solid #dcdde1; padding-bottom:10px;">🌟 本週親子建議與祈禱</h3>
+                        <div style="margin-bottom:15px;">
+                            <strong style="color:#2c3e50; font-size:1.1em;">💡 親子建議：</strong>
+                            <p style="margin:5px 0 0 0; color:#34495e; line-height:1.5;">${devotion.advice}</p>
+                        </div>
+                        <div>
+                            <strong style="color:#27ae60; font-size:1.1em;">🙏 親子祈禱：</strong>
+                            <p style="margin:5px 0 0 0; color:#34495e; line-height:1.5; font-style:italic;">「${devotion.prayer}」</p>
+                        </div>
+                    `;
+                    container.appendChild(devBox);
+                }
+            }
+            
+            navigateTo('iq-section');
+        }
+
+        // ==========================================
+        // 導師管理後台
         // ==========================================
         function loadAdminPanel() {
             navigateTo('admin-section');
@@ -714,7 +986,6 @@
                 recordBody.innerHTML = snapshot.empty ? '<tr><td colspan="3" style="color:#7f8c8d;">目前沒有需要批改的錄音。</td></tr>' : '';
                 snapshot.forEach(doc => {
                     const data = doc.data(); const tr = document.createElement('tr');
-                    // 更新為三個評分按鈕，以直排顯示更美觀
                     tr.innerHTML = `<td><strong>${data.studentName}</strong></td>
                                     <td><audio controls src="${data.audioUrl}" style="height:35px; width:100%;"></audio></td>
                                     <td style="display: flex; flex-direction: column; gap: 6px;">
@@ -750,7 +1021,6 @@
             if (newName && newName.trim()) db.collection("users").doc(id).update({ name: newName.trim() }).catch(e => alert("更新失敗"));
         }
         
-        // 根據三級評分發放獎勵與通知
         function reviewRecording(rId, uId, status) {
             db.collection("recordings").doc(rId).update({ status: status });
             
