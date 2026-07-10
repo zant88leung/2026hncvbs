@@ -337,7 +337,7 @@
             apiKey: "AIzaSyCyOgghNZaV8y9yAkTXL5M3SyL7s7oABuY",
             authDomain: "hncvbs-4e033.firebaseapp.com",
             projectId: "hncvbs-4e033",
-            storageBucket: "hncvbs-4e033.firebasestorage.app",
+            storageBucket: "hncvbs-4e033.appspot.com",
             messagingSenderId: "1048162479697",
             appId: "1:1048162479697:web:986c9898d56643e6791270",
             measurementId: "G-KX66VPH3B7"
@@ -732,6 +732,11 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
+// 👇 新增這兩行：設定格式並強行將位元率降至 8000 (或更低)
+            const options = { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 8000 }; 
+            mediaRecorder = new MediaRecorder(stream, options); // 將 options 放進括號裡
+            // 👆
+
                 mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
