@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🔥🦁火焰與獅子：勇者傳說</title>
     
-    <!-- 引入 Firebase SDK (保留 Auth 與 Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
     <style>
         :root {
@@ -64,7 +64,6 @@
         .back-btn { left: 15px; display: none; }
         .logout-btn { right: 15px; display: none; background: #ff7675; color: white; }
         
-        /* 標題置中設定 */
         .header-titles {
             display: flex;
             flex-direction: column;
@@ -81,7 +80,6 @@
         }
         .app-title { margin: 0; font-size: 1.3em; font-weight: 900; color: #34495e; }
 
-        /* 中間主要內容區 */
         .content-area {
             width: 100%;
             max-width: 500px;
@@ -90,7 +88,6 @@
             flex-grow: 1;
         }
 
-        /* 頂部狀態列 */
         .status-bar {
             background: white;
             padding: 15px;
@@ -106,7 +103,6 @@
         .user-tag { color: #34495e; }
         .coin-tag { color: #f39c12; }
 
-        /* 頁面切換控制 */
         .page { display: none; animation: fadeIn 0.3s ease-in-out; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -121,21 +117,18 @@
         .btn-blue { background: linear-gradient(45deg, var(--blue), var(--blue-dark)); box-shadow: 0 4px 0 #2980b9; }
         .btn-green { background: linear-gradient(45deg, var(--green), var(--green-dark)); box-shadow: 0 4px 0 #27ae60; color: #111; }
         .btn-orange { background: linear-gradient(45deg, #f39c12, #e67e22); box-shadow: 0 4px 0 #d35400; color: white; }
+        .btn-purple { background: linear-gradient(45deg, #9b59b6, #8e44ad); box-shadow: 0 4px 0 #732d91; color: white; } /* 紫色紀錄按鈕 */
         .btn-admin { background: #2c3e50; box-shadow: 0 4px 0 #1a252f; display: none; }
         
-        /* 鎖定狀態按鈕樣式 */
         .btn-locked { background: #e0e0e0; box-shadow: 0 4px 0 #bdc3c7; color: #7f8c8d; cursor: not-allowed; }
         .mode-btn:active:not(.btn-locked) { transform: translateY(4px); box-shadow: none; }
 
-        /* 卡片外框 */
         .game-card { background: white; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
         .game-title { font-size: 1.5em; font-weight: 900; margin-top: 0; margin-bottom: 20px; }
 
-        /* 登入表單元件 */
         .auth-form input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ecf0f1; border-radius: 8px; box-sizing: border-box; font-size: 1.1em; }
         .auth-btn { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; }
         
-        /* 導師後台表格 */
         .admin-table-wrapper { overflow-x: auto; margin-top: 15px; margin-bottom: 30px; }
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: center; }
         .admin-table th, .admin-table td { border: 1px solid #ddd; padding: 10px 6px; }
@@ -145,7 +138,6 @@
         .rename-btn { border: none; background: none; cursor: pointer; font-size: 1.1em; transition: transform 0.2s; }
         .rename-btn:hover { transform: scale(1.2); }
 
-        /* 核心遊戲與問答元件 */
         .verse-box { background: #f8f9fa; border-left: 5px solid #4facfe; padding: 15px; border-radius: 0 8px 8px 0; font-size: 1.2em; margin-bottom: 20px; text-align: left; line-height: 1.5; min-height: 80px; }
         .action-btn { background: #ff4757; color: white; padding: 15px; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; width: 100%; cursor: pointer; box-shadow: 0 4px 0 #c0392b; margin-top: 10px; }
         .action-btn.submit { background: #2ecc71; box-shadow: 0 4px 0 #27ae60; }
@@ -156,53 +148,20 @@
         .quiz-btn:hover { background: #fcfcfc; }
         audio { width: 100%; margin-top: 15px; outline: none; }
 
-        /* 每課主題提醒與通知樣式 */
         .theme-reminder {
-            margin-top: 25px;
-            padding: 15px;
-            background: #fffdf5;
-            border-left: 5px solid #f39c12;
-            border-radius: 8px;
-            text-align: left;
-            font-size: 1.05em;
-            font-weight: bold;
-            color: #d35400;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            line-height: 1.4;
+            margin-top: 25px; padding: 15px; background: #fffdf5; border-left: 5px solid #f39c12; border-radius: 8px; text-align: left; font-size: 1.05em; font-weight: bold; color: #d35400; box-shadow: 0 2px 5px rgba(0,0,0,0.05); line-height: 1.4;
         }
 
         #notification-toast {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2ecc71;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 9999;
-            font-weight: bold;
-            text-align: center;
-            animation: fadeInDown 0.5s ease-out;
-            width: 80%;
-            max-width: 400px;
+            display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: white; padding: 15px 25px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 9999; font-weight: bold; text-align: center; animation: fadeInDown 0.5s ease-out; width: 80%; max-width: 400px;
         }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translate(-50%, -20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
+        @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
 </head>
 <body>
 
-    <!-- 系統通知氣泡 -->
-    <div id="notification-toast">
-        <span id="toast-msg"></span>
-    </div>
+    <div id="notification-toast"><span id="toast-msg"></span></div>
 
-    <!-- 置中頂部導航列 -->
     <header class="app-header">
         <button id="back-btn" class="back-btn" onclick="goBack()">◀ 返回</button>
         <div class="header-titles">
@@ -214,7 +173,6 @@
 
     <div class="content-area">
         
-        <!-- ================= 頁面：學生登入 ================= -->
         <div id="login-section" class="page active">
             <div class="game-card auth-form">
                 <h2 class="game-title">小勇士登入系統</h2>
@@ -224,13 +182,11 @@
             </div>
         </div>
 
-        <!-- 頂部即時狀態列 -->
         <div id="status-bar" class="status-bar" style="display: none;">
             <span class="user-tag">👤 <span id="user-name">載入中...</span></span>
             <span class="coin-tag">💰 <span id="coin-count">0</span></span>
         </div>
 
-        <!-- ================= 頁面：主要功能選單 ================= -->
         <div id="main-menu" class="page">
             <div class="menu-container">
                 <button class="mode-btn btn-blue" onclick="openWeekSelector('verse')">
@@ -241,12 +197,16 @@
                     <span style="font-size:1.8em; margin-right:15px;">🧠</span> 
                     <div>勇者問答挑戰<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">每週精選聖經問答 (每週2次)</span></div>
                 </button>
-                <!-- 新增：親子IQ題 -->
                 <button class="mode-btn btn-orange" onclick="openWeekSelector('iq')">
                     <span style="font-size:1.8em; margin-right:15px;">👨‍👩‍👧‍👦</span> 
                     <div>親子互動與IQ題<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">親子共樂時光 (無限次數)</span></div>
                 </button>
                 
+                <button id="score-history-btn" class="mode-btn btn-purple" onclick="navigateTo('score-history-section')" style="display: none;">
+                    <span style="font-size:1.8em; margin-right:15px;">📜</span> 
+                    <div>我的分數紀錄<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">查看過往所有加分詳情</span></div>
+                </button>
+
                 <button id="admin-btn" class="mode-btn btn-admin" onclick="loadAdminPanel()">
                     <span style="font-size:1.8em; margin-right:15px;">📊</span> 
                     <div>導師管理台<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">批改錄音與進度追蹤</span></div>
@@ -254,35 +214,47 @@
             </div>
         </div>
 
-        <!-- ================= 頁面：選擇週數選單 ================= -->
-        <div id="week-select-section" class="page">
-            <div class="game-card">
-                <h2 class="game-title" id="week-title" style="color: #2c3e50;">選擇週數</h2>
-                <div class="menu-container" id="week-buttons-container">
-                    <!-- 由 JavaScript 動態生成 1-6 週按鈕 -->
+        <div id="score-history-section" class="page">
+            <div class="game-card" style="padding: 20px 10px;">
+                <h2 class="game-title" style="color: #8e44ad; margin-bottom: 10px;">📜 我的分數紀錄</h2>
+                <p style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px;">這裡顯示你所有的加分紀錄，繼續努力喔！</p>
+                <div class="admin-table-wrapper" style="margin-bottom: 0; max-height: 400px; overflow-y: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%; position: sticky; top: 0; background: #f8f9fa;">日期時間</th>
+                                <th style="width: 45%; position: sticky; top: 0; background: #f8f9fa;">加分項目</th>
+                                <th style="width: 25%; position: sticky; top: 0; background: #f8f9fa;">金幣</th>
+                            </tr>
+                        </thead>
+                        <tbody id="score-history-body">
+                            <tr><td colspan="3">載入中...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- ================= 頁面：背金句 ================= -->
+        <div id="week-select-section" class="page">
+            <div class="game-card">
+                <h2 class="game-title" id="week-title" style="color: #2c3e50;">選擇週數</h2>
+                <div class="menu-container" id="week-buttons-container"></div>
+            </div>
+        </div>
+
         <div id="record-section" class="page">
             <div class="game-card">
                 <h2 class="game-title" style="color: #2980b9;">🎤 背誦金句</h2>
-                <div class="verse-box">
-                    <strong id="verse-text" style="color: #2c3e50; transition: all 0.3s;">載入中...</strong>
-                </div>
-                
+                <div class="verse-box"><strong id="verse-text" style="color: #2c3e50; transition: all 0.3s;">載入中...</strong></div>
                 <p style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px;">點擊開始錄音，背誦完成後試聽並上傳。</p>
                 <button id="start-record-btn" class="action-btn" onclick="startRecording()">🔴 開始錄音</button>
                 <button id="stop-record-btn" class="action-btn" style="background:#34495e; box-shadow: 0 4px 0 #2c3e50; display:none;" onclick="stopRecording()">⏹️ 停止錄音</button>
                 <audio id="audio-playback" controls style="display: none;"></audio>
                 <button id="upload-record-btn" class="action-btn submit" style="display:none;" onclick="uploadRecording()">📤 上傳給導師批改</button>
-                
                 <div id="record-theme-reminder" class="theme-reminder"></div>
             </div>
         </div>
 
-        <!-- ================= 頁面：問答挑戰 ================= -->
         <div id="quiz-section" class="page">
             <div class="game-card">
                 <h2 class="game-title" style="color: #27ae60;">🧠 問答挑戰</h2>
@@ -293,23 +265,18 @@
                     <p id="question-text" style="font-size:1.15em; font-weight:bold; margin-bottom: 22px; text-align:left; line-height:1.4;">載入中...</p>
                     <div id="options-container"></div>
                 </div>
-
                 <div id="quiz-theme-reminder" class="theme-reminder"></div>
             </div>
         </div>
 
-        <!-- ================= 頁面：親子IQ題 ================= -->
         <div id="iq-section" class="page">
             <div class="game-card">
                 <h2 class="game-title" style="color: #e67e22;">👨‍👩‍👧‍👦 親子互動與IQ題</h2>
                 <p style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px;">本環節沒有金幣獎勵，請與家人一起思考答案，並完成本週的小實踐吧！</p>
-                <div id="iq-container" style="text-align: left;">
-                    <!-- 題目與祈禱建議將由 JavaScript 動態生成 -->
-                </div>
+                <div id="iq-container" style="text-align: left;"></div>
             </div>
         </div>
 
-        <!-- ================= 頁面：導師管理後台 ================= -->
         <div id="admin-section" class="page">
             <div class="game-card" style="padding: 20px 10px;">
                 <h2 class="game-title" style="color: #2c3e50; margin-bottom: 10px;">📊 導師管理台</h2>
@@ -352,32 +319,20 @@
         let currentSelectedWeek = 1; 
         let navigationHistory = []; 
 
-        // ==========================================
-        // 每週開放日期設定 (自動解鎖依據)
-        // ==========================================
         const weekDatesConfig = {
-            1: "12/7", 
-            2: "19/7", 
-            3: "26/7", 
-            4: "2/8", 
-            5: "9/8", 
-            6: "16/8"
+            1: "12/7", 2: "19/7", 3: "26/7", 4: "2/8", 5: "9/8", 6: "16/8"
         };
 
-        // 自動判斷該週是否開放的邏輯
         function isWeekUnlocked(week) {
-            if (week === 1) return true; // 第 1 週預先開放
+            if (week === 1) return true;
             const now = new Date();
             const dateStr = weekDatesConfig[week];
             const [day, month] = dateStr.split('/');
-            // JavaScript 的 Date 月份是 0 起算 (所以 7月 是 6)
             const targetDate = new Date(2026, parseInt(month) - 1, parseInt(day));
             return now >= targetDate;
         }
 
-        // ==========================================
-        // 1. Firebase 初始化設置
-        // ==========================================
+        // Firebase 初始化設置
         const firebaseConfig = {
             apiKey: "AIzaSyCyOgghNZaV8y9yAkTXL5M3SyL7s7oABuY",
             authDomain: "hncvbs-4e033.firebaseapp.com",
@@ -395,7 +350,6 @@
         let currentUserId = null;
         const UNIVERSAL_PASSWORD = "SummerCamp2026!";
 
-        // 顯示頂部系統通知 (Toast) 的功能
         function showNotification(msg, color = "#2ecc71") {
             const toast = document.getElementById('notification-toast');
             document.getElementById('toast-msg').innerText = msg;
@@ -405,20 +359,25 @@
         }
 
         // ==========================================
-        // 七週的主題設定 (已去前綴)
+        // 寫入分數紀錄到 Firebase
         // ==========================================
-        const weeklyThemes = {
-            1: "🚫不向偶像低頭【決心】",
-            2: "🔮揭開異夢奧祕【智慧】",
-            3: "🔥火窯中的朋友【忠心】",
-            4: "😤驕傲人的結局【謙卑】",
-            5: "🙏不停止的禱告【堅持】",
-            6: "🦁封住獅子的口【信心】"
-        };
+        function addScoreHistory(uid, itemName, pointsEarned) {
+            db.collection("score_history").add({
+                uid: uid,
+                item: itemName,
+                points: pointsEarned,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(e => console.error("Error writing score history: ", e));
+        }
 
         // ==========================================
-        // 六週的金句題庫設定
+        // 七週的主題設定
         // ==========================================
+        const weeklyThemes = {
+            1: "🚫不向偶像低頭【決心】", 2: "🔮揭開異夢奧祕【智慧】", 3: "🔥火窯中的朋友【忠心】", 
+            4: "😤驕傲人的結局【謙卑】", 5: "🙏不停止的禱告【堅持】", 6: "🦁封住獅子的口【信心】"
+        };
+
         const versesData = {
             1: "「但以理卻立志不以王的膳和王所飲的酒玷污自己。」(但以理書 1:8上)",
             2: "「上帝的名是應當稱頌的！從亙古直到永遠，因為智慧能力都屬乎他。」(但以理書 2:20)",
@@ -590,113 +549,72 @@
             }
         };
 
-        // ==========================================
-        // 頁面導航與選擇週數邏輯
-        // ==========================================
-        function navigateTo(sectionId, isBack = false) {
-            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+        // 頁面導航
+        function navigateTo(pageId) {
+            if (pageId !== 'login-section') {
+                const currentActive = document.querySelector('.page.active');
+                if (currentActive && currentActive.id !== pageId) {
+                    navigationHistory.push(currentActive.id);
+                }
+            }
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
             
             const backBtn = document.getElementById('back-btn');
-            if(sectionId === 'main-menu' || sectionId === 'login-section') {
+            if (pageId === 'login-section' || pageId === 'main-menu') {
                 backBtn.style.display = 'none';
                 navigationHistory = []; 
             } else {
                 backBtn.style.display = 'block';
-                if(!isBack && navigationHistory[navigationHistory.length - 1] !== sectionId) {
-                    navigationHistory.push(sectionId);
-                }
             }
-            if(sectionId !== 'record-section' && mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
         }
 
         function goBack() {
-            navigationHistory.pop(); 
-            const prevPage = navigationHistory.length > 0 ? navigationHistory[navigationHistory.length - 1] : 'main-menu';
-            navigateTo(prevPage, true);
-        }
-
-        function returnToMenu() { navigateTo('main-menu'); }
-
-        // 動態生成帶有「次數限制」與「自動解鎖」的選單
-        function openWeekSelector(type) {
-            const container = document.getElementById('week-buttons-container');
-            container.innerHTML = '';
-            
-            let titlePrefix = '';
-            if(type === 'quiz') titlePrefix = '🧠 每日挑戰';
-            else if(type === 'verse') titlePrefix = '🎤 背誦金句';
-            else if(type === 'iq') titlePrefix = '👨‍👩‍👧‍👦 親子互動與IQ題';
-            document.getElementById('week-title').innerText = `${titlePrefix} (選擇週數)`;
-            
-            // 設定各模式的最大次數
-            const maxAttempts = type === 'quiz' ? 2 : 3;
-
-            for(let i = 1; i <= 6; i++) {
-                const btn = document.createElement('button');
+            if (navigationHistory.length > 0) {
+                const prevPage = navigationHistory.pop();
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(prevPage).classList.add('active');
                 
-                // 檢查是否達到解鎖日期
-                const isUnlocked = isWeekUnlocked(i);
-                const weekDateLabel = weekDatesConfig[i];
-                
-                const usedAttempts = currentUserDoc ? (currentUserDoc[`${type}_attempts_${i}`] || 0) : 0;
-                const remaining = Math.max(0, maxAttempts - usedAttempts);
-                
-                if (!isUnlocked) {
-                    // 未到開放日期
-                    btn.className = 'mode-btn btn-locked';
-                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">🔒</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.65em; font-weight:normal;">將於 ${weekDateLabel} 開放</span></div>`;
-                    btn.onclick = () => { alert(`🔒 這一週的挑戰將於 ${weekDateLabel} 自動開放喔！`); };
-                } else if (type === 'iq') {
-                    // 親子IQ題 (無限次數，無金幣)
-                    btn.className = 'mode-btn btn-orange';
-                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">👨‍👩‍👧‍👦</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.7em; font-weight:bold; color:#fffdf5;">與家人一起動動腦筋</span></div>`;
-                    btn.onclick = () => { startIQ(i); };
-                } else if (remaining <= 0 && currentUserDoc && currentUserDoc.role !== 'admin') {
-                    // 次數用盡時按鈕變灰
-                    btn.className = 'mode-btn btn-locked';
-                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">⏳</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.65em; font-weight:bold; color:#e74c3c;">次數已用盡 (${maxAttempts}/${maxAttempts})</span></div>`;
-                    btn.onclick = () => { alert(`⏳ 這週的次數已經用完囉！下週繼續努力！`); };
-                } else {
-                    // 正常可遊玩狀態
-                    const icon = type === 'quiz' ? '📝' : '📖';
-                    btn.className = `mode-btn ${type === 'quiz' ? 'btn-green' : 'btn-blue'}`;
-                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.7em; font-weight:bold; color:#ffeaa7;">剩餘次數：${remaining} 次</span></div>`;
-                    btn.onclick = () => { type === 'quiz' ? startQuiz(i) : startVerse(i); };
+                if (prevPage === 'main-menu') {
+                    document.getElementById('back-btn').style.display = 'none';
                 }
-                container.appendChild(btn);
+            } else {
+                navigateTo('main-menu');
             }
-            if (navigationHistory.length === 0) navigationHistory.push('main-menu');
-            navigateTo('week-select-section');
         }
 
         // ==========================================
-        // 核心驗證邏輯與即時通知接收
+        // 登入 (使用原本正確的 @bible.local 機制)
         // ==========================================
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                currentUserId = user.uid;
-                bindUserData(user.uid);
-                document.getElementById('logout-btn').style.display = 'block';
-                document.getElementById('status-bar').style.display = 'flex';
-                navigateTo('main-menu');
-            } else {
-                currentUserId = null;
-                currentUserDoc = null;
-                document.getElementById('logout-btn').style.display = 'none';
-                document.getElementById('status-bar').style.display = 'none';
-                navigateTo('login-section');
-            }
-        });
-
         function loginUser() {
             const username = document.getElementById('username').value.trim();
             if(!username) return alert('請輸入 ID！');
+            
             auth.signInWithEmailAndPassword(`${username}@bible.local`, UNIVERSAL_PASSWORD)
-                .catch(() => alert('登入失敗：請確認學生 ID 是否正確。'));
+                .then(userCredential => {
+                    currentUserId = userCredential.user.uid;
+                    bindUserData(currentUserId);
+                    document.getElementById('status-bar').style.display = 'flex';
+                    document.getElementById('logout-btn').style.display = 'block';
+                    navigateTo('main-menu');
+                })
+                .catch((error) => alert('登入失敗：請確認學生 ID 是否正確。'));
         }
-        function logoutUser() { auth.signOut(); }
 
+        function logoutUser() {
+            auth.signOut().then(() => {
+                currentUserId = null; currentUserDoc = null;
+                document.getElementById('status-bar').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'none';
+                document.getElementById('username').value = '';
+                navigationHistory = [];
+                navigateTo('login-section');
+            });
+        }
+
+        // ==========================================
+        // 讀取用戶資料與分數紀錄
+        // ==========================================
         function bindUserData(uid) {
             db.collection("users").doc(uid).onSnapshot((doc) => {
                 if (doc.exists) {
@@ -705,32 +623,105 @@
                     document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
                     document.getElementById('admin-btn').style.display = currentUserDoc.role === 'admin' ? 'flex' : 'none';
                     
+                    // 控制「分數紀錄大按鈕」只有學生能看到
+                    document.getElementById('score-history-btn').style.display = currentUserDoc.role === 'admin' ? 'none' : 'flex';
+                    
                     if (currentUserDoc.unread_notification && currentUserDoc.role !== 'admin') {
                         showNotification(currentUserDoc.unread_notification);
                         db.collection("users").doc(uid).update({
                             unread_notification: firebase.firestore.FieldValue.delete()
                         });
                     }
-                } else {
-                    db.collection("users").doc(uid).set({
-                        name: document.getElementById('username').value.trim() || '學生',
-                        coins: 0, attendance_score: 0, performance_score: 0, total_correct: 0, total_incorrect: 0,
-                        role: 'student', last_play_date: new Date().toLocaleDateString()
-                    });
                 }
             });
+
+            // 監聽分數紀錄 (顯示於獨立頁面內)
+            db.collection("score_history")
+              .where("uid", "==", uid)
+              .onSnapshot((snapshot) => {
+                  const tbody = document.getElementById('score-history-body');
+                  if (snapshot.empty) {
+                      tbody.innerHTML = '<tr><td colspan="3" style="color:#7f8c8d; padding:20px;">尚未有分數紀錄，繼續努力！</td></tr>';
+                      return;
+                  }
+                  
+                  let records = [];
+                  snapshot.forEach(doc => records.push(doc.data()));
+                  records.sort((a, b) => {
+                      const timeA = a.timestamp ? a.timestamp.toMillis() : Date.now();
+                      const timeB = b.timestamp ? b.timestamp.toMillis() : Date.now();
+                      return timeB - timeA;
+                  });
+
+                  tbody.innerHTML = '';
+                  records.forEach(data => {
+                      let dateStr = "剛剛";
+                      if (data.timestamp) {
+                          const d = data.timestamp.toDate();
+                          dateStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                      }
+                      const tr = document.createElement('tr');
+                      tr.innerHTML = `
+                          <td style="font-size:0.85em; color:#7f8c8d;">${dateStr}</td>
+                          <td style="font-weight:bold; color:#2980b9;">${data.item}</td>
+                          <td style="color:#f39c12; font-weight:bold; font-size:1.1em;">+${data.points}</td>
+                      `;
+                      tbody.appendChild(tr);
+                  });
+              });
         }
 
         // ==========================================
-        // 錄音邏輯 (含次數計算)
+        // 各功能邏輯 (問答、錄音、導師後台)
         // ==========================================
+        function openWeekSelector(type) {
+            const container = document.getElementById('week-buttons-container');
+            container.innerHTML = '';
+            
+            const titles = { 'verse': '選擇背金句週數', 'quiz': '選擇問答週數', 'iq': '選擇親子互動週數' };
+            document.getElementById('week-title').innerText = titles[type];
+
+            const maxAttempts = type === 'quiz' ? 2 : 3;
+            
+            for(let i = 1; i <= 6; i++) {
+                const btn = document.createElement('button');
+                const isUnlocked = isWeekUnlocked(i);
+                const weekDateLabel = weekDatesConfig[i];
+                const usedAttempts = currentUserDoc ? (currentUserDoc[`${type}_attempts_${i}`] || 0) : 0;
+                const remaining = Math.max(0, maxAttempts - usedAttempts);
+                
+                if (!isUnlocked) {
+                    btn.className = 'mode-btn btn-locked';
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">🔒</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.65em; font-weight:normal;">將於 ${weekDateLabel} 開放</span></div>`;
+                    btn.onclick = () => { alert(`🔒 這一週的挑戰將於 ${weekDateLabel} 自動開放喔！`); };
+                } else if (type === 'iq') {
+                    btn.className = 'mode-btn btn-orange';
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">👨‍👩‍👧‍👦</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.7em; font-weight:bold; color:#fffdf5;">與家人一起動動腦筋</span></div>`;
+                    btn.onclick = () => { startIQ(i); };
+                } else if (remaining <= 0 && currentUserDoc && currentUserDoc.role !== 'admin') {
+                    btn.className = 'mode-btn btn-locked';
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">⏳</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.65em; font-weight:bold; color:#e74c3c;">次數已用盡 (${maxAttempts}/${maxAttempts})</span></div>`;
+                    btn.onclick = () => { alert(`⏳ 這週的次數已經用完囉！下週繼續努力！`); };
+                } else {
+                    const icon = type === 'quiz' ? '📝' : '📖';
+                    btn.className = `mode-btn ${type === 'quiz' ? 'btn-green' : 'btn-blue'}`;
+                    const adminText = (currentUserDoc && currentUserDoc.role === 'admin') ? "無限次" : `剩餘 ${remaining} 次`;
+                    btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週<br><span style="font-size:0.65em; font-weight:normal;">${adminText}</span></div>`;
+                    btn.onclick = () => {
+                        if (type === 'verse') startVerse(i);
+                        else if (type === 'quiz') startQuiz(i);
+                    };
+                }
+                container.appendChild(btn);
+            }
+            navigateTo('week-select-section');
+        }
+
+        // 錄音功能
         function startVerse(weekIndex) {
             currentSelectedWeek = weekIndex;
-            
-            // 設定經文文字並清除可能殘留的隱藏樣式
             document.getElementById('verse-text').innerText = versesData[weekIndex] || "本週金句導師尚在準備中...";
             document.getElementById('verse-text').style.color = '#2c3e50';
-            
             document.getElementById('record-theme-reminder').innerText = "💡" + weeklyThemes[weekIndex];
             navigateTo('record-section');
         }
@@ -750,12 +741,8 @@
                     document.getElementById('upload-record-btn').style.display = 'block';
                 };
                 mediaRecorder.start();
-                
-                // 錄音開始，隱藏經文提示
                 const verseEl = document.getElementById('verse-text');
-                verseEl.innerText = "🎙️ 錄音中，請憑記憶背誦...";
-                verseEl.style.color = "#e74c3c";
-
+                verseEl.innerText = "🎙️ 錄音中，請憑記憶背誦..."; verseEl.style.color = "#e74c3c";
                 document.getElementById('start-record-btn').style.display = 'none';
                 document.getElementById('stop-record-btn').style.display = 'block';
                 document.getElementById('audio-playback').style.display = 'none';
@@ -765,88 +752,63 @@
 
         function stopRecording() {
             if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-            
-            // 錄音結束，重新顯示經文，讓學生可以對答案
             const verseEl = document.getElementById('verse-text');
-            verseEl.innerText = versesData[currentSelectedWeek];
-            verseEl.style.color = "#2c3e50";
-
+            verseEl.innerText = versesData[currentSelectedWeek]; verseEl.style.color = "#2c3e50";
             document.getElementById('stop-record-btn').style.display = 'none';
             const btn = document.getElementById('start-record-btn');
-            btn.style.display = 'block'; btn.innerText = "🔄 重新錄製"; btn.style.background = "#e67e22"; btn.style.boxShadow = "0 4px 0 #d35400";
+            btn.style.display = 'block'; btn.innerText = "🔄 重新錄製";
+            btn.style.background = "#e67e22"; btn.style.boxShadow = "0 4px 0 #d35400";
         }
 
         async function uploadRecording() {
             if (!audioBlob || !currentUserId) return;
-
-            const maxAttempts = 3;
-            const usedAttempts = currentUserDoc ? (currentUserDoc[`verse_attempts_${currentSelectedWeek}`] || 0) : 0;
-            if (usedAttempts >= maxAttempts && currentUserDoc.role !== 'admin') {
-                alert("本週錄音上傳次數已用完！");
-                return;
-            }
-
             const btn = document.getElementById('upload-record-btn');
             btn.innerText = "⏳ 上傳中..."; btn.disabled = true;
-
-            const studentName = (currentUserDoc ? currentUserDoc.name : '未知學生') + ` (第 ${currentSelectedWeek} 週)`;
-
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = async function() {
-                try {
-                    await db.collection("recordings").add({
-                        uid: currentUserId, studentName: studentName, audioUrl: reader.result, 
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp(), status: 'pending'
+            try {
+                if (currentUserDoc && currentUserDoc.role !== 'admin') {
+                    await db.collection("users").doc(currentUserId).update({
+                        [`verse_attempts_${currentSelectedWeek}`]: firebase.firestore.FieldValue.increment(1)
                     });
-                    
-                    // 成功上傳後才扣除金句次數
-                    if(currentUserDoc.role !== 'admin') {
-                        await db.collection("users").doc(currentUserId).update({
-                            [`verse_attempts_${currentSelectedWeek}`]: firebase.firestore.FieldValue.increment(1)
-                        });
-                    }
-
-                    showNotification('✅ 錄音上傳成功！');
-                    openWeekSelector('verse'); // 重新整理並返回選單，更新次數顯示
-                } catch (err) { alert('上傳失敗: ' + err.message); } 
-                finally { btn.innerText = "📤 上傳給導師批改"; btn.disabled = false; }
-            };
+                }
+                const storageRef = firebase.storage().ref();
+                const fileRef = storageRef.child(`recordings/${currentUserId}_week${currentSelectedWeek}_${Date.now()}.webm`);
+                await fileRef.put(audioBlob);
+                const downloadURL = await fileRef.getDownloadURL();
+                await db.collection("recordings").add({
+                    uid: currentUserId,
+                    userName: currentUserDoc.name,
+                    week: currentSelectedWeek,
+                    audioUrl: downloadURL,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showNotification("📤 上傳成功！導師會盡快批改！");
+                openWeekSelector('verse'); 
+            } catch (error) {
+                alert("上傳失敗：" + error.message);
+            } finally {
+                btn.innerText = "📤 上傳給導師批改"; btn.disabled = false;
+                document.getElementById('start-record-btn').innerText = "🔴 開始錄音";
+                document.getElementById('start-record-btn').style.background = "#ff4757";
+                document.getElementById('start-record-btn').style.boxShadow = "0 4px 0 #c0392b";
+                document.getElementById('audio-playback').style.display = 'none';
+                btn.style.display = 'none';
+            }
         }
 
-        // ==========================================
-        // 問答邏輯 (含次數計算與防止刷新刷金幣)
-        // ==========================================
-        let currentQuizIndex = 0;
-        let currentQuizList = [];
-
+        // 問答功能
+        let currentQuizList = []; let currentQuizIndex = 0;
         function startQuiz(weekIndex) {
-            const maxAttempts = 2;
-            const usedAttempts = currentUserDoc ? (currentUserDoc[`quiz_attempts_${weekIndex}`] || 0) : 0;
-            
-            if (usedAttempts >= maxAttempts && currentUserDoc.role !== 'admin') {
-                alert("這週的問答挑戰次數已經用完囉！");
-                return;
-            }
-            
-            // 確認對話框與馬上寫入 DB 扣除機會
-            if(currentUserDoc.role !== 'admin') {
-                if(!confirm(`開始挑戰將會扣除 1 次機會 (本週剩餘 ${maxAttempts - usedAttempts} 次)。\n請確保網路穩定，確定要開始嗎？`)) {
-                    return; // 學生取消
-                }
-                
+            if (currentUserDoc && currentUserDoc.role !== 'admin') {
                 db.collection("users").doc(currentUserId).update({
                     [`quiz_attempts_${weekIndex}`]: firebase.firestore.FieldValue.increment(1)
                 });
             }
-
             currentSelectedWeek = weekIndex;
             document.getElementById('quiz-theme-reminder').innerText = "💡" + weeklyThemes[weekIndex];
-            
             currentQuizList = quizDataAll[weekIndex] || [];
             if(currentQuizList.length === 0) {
-                alert("這週的題目導師還在準備中喔！");
-                return;
+                alert("這週的題目導師還在準備中喔！"); return;
             }
             currentQuizIndex = 0;
             navigateTo('quiz-section');
@@ -856,20 +818,18 @@
         function loadQuizQuestion() {
             if (currentQuizIndex >= currentQuizList.length) {
                 showNotification(`🎉 太棒了！你已完成第 ${currentSelectedWeek} 週的挑戰！`);
-                openWeekSelector('quiz'); // 重新整理週數選單以更新次數
+                openWeekSelector('quiz'); 
                 return;
             }
-
             document.getElementById('quiz-progress').innerText = currentQuizIndex + 1 + " / " + currentQuizList.length;
             const qData = currentQuizList[currentQuizIndex];
             document.getElementById('question-text').innerText = (currentQuizIndex + 1) + ". " + qData.q;
-            
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
-            
             qData.options.forEach((optText, idx) => {
                 const btn = document.createElement('button');
-                btn.innerText = optText; btn.className = "quiz-btn";
+                btn.innerText = optText;
+                btn.className = "quiz-btn";
                 btn.onclick = () => evaluateAnswer(idx, qData.a);
                 optionsContainer.appendChild(btn);
             });
@@ -880,6 +840,7 @@
             const userRef = db.collection("users").doc(currentUserId);
             if (selectedIdx === correctIdx) {
                 userRef.update({ coins: firebase.firestore.FieldValue.increment(20), total_correct: firebase.firestore.FieldValue.increment(1) });
+                addScoreHistory(currentUserId, `問答挑戰 (第 ${currentSelectedWeek} 週)`, 20); // 寫入紀錄
                 showNotification("✅ 答對了！獲得 20 金幣！");
             } else {
                 userRef.update({ total_incorrect: firebase.firestore.FieldValue.increment(1) });
@@ -889,77 +850,42 @@
             loadQuizQuestion();
         }
 
-        // ==========================================
-        // 親子IQ題及每週建議與祈禱邏輯
-        // ==========================================
+        // 親子IQ功能
         function startIQ(weekIndex) {
             currentSelectedWeek = weekIndex;
-            
             const iqList = iqDataAll[weekIndex] || [];
             const devotion = familyDevotionData[weekIndex];
             const container = document.getElementById('iq-container');
             container.innerHTML = '';
 
-            if (iqList.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#7f8c8d; font-weight:bold; margin-top:20px;">這週的親子內容還在準備中喔！</p>';
+            if (iqList.length === 0 && !devotion) {
+                container.innerHTML = '<p>本週內容導師還在準備中！</p>';
             } else {
-                // 渲染 IQ 題
-                iqList.forEach((item, index) => {
+                iqList.forEach((qItem, idx) => {
                     const qBox = document.createElement('div');
-                    qBox.style.marginBottom = '20px';
-                    qBox.style.padding = '15px';
-                    qBox.style.background = '#fffdf5';
-                    qBox.style.borderRadius = '10px';
-                    qBox.style.borderLeft = '5px solid #f39c12';
-                    qBox.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
+                    qBox.style.background = "#f8f9fa";
+                    qBox.style.padding = "15px";
+                    qBox.style.borderRadius = "8px";
+                    qBox.style.marginBottom = "15px";
+                    qBox.style.borderLeft = "5px solid #e67e22";
                     
-                    const qText = document.createElement('div');
-                    qText.innerHTML = `<strong style="color:#d35400;">Q${index + 1}:</strong> <span style="font-size:1.1em; color:#2c3e50;">${item.q}</span>`;
-                    qText.style.marginBottom = '12px';
-                    
-                    const ansBtn = document.createElement('button');
-                    ansBtn.innerText = '👀 查看答案';
-                    ansBtn.className = 'action-btn';
-                    ansBtn.style.background = '#f39c12';
-                    ansBtn.style.boxShadow = '0 4px 0 #d35400';
-                    ansBtn.style.padding = '12px';
-                    ansBtn.style.fontSize = '1em';
-                    ansBtn.style.marginTop = '0';
-                    
-                    const aText = document.createElement('div');
-                    aText.innerHTML = `<strong>答案：</strong>${item.a}`;
-                    aText.style.marginTop = '10px';
-                    aText.style.color = '#27ae60';
-                    aText.style.fontSize = '1.1em';
-                    aText.style.fontWeight = 'bold';
-                    aText.style.display = 'none';
-                    aText.style.padding = '10px';
-                    aText.style.background = '#e8f8f5';
-                    aText.style.borderRadius = '8px';
-                    
-                    ansBtn.onclick = () => {
-                        aText.style.display = 'block';
-                        ansBtn.style.display = 'none';
-                    };
-                    
-                    qBox.appendChild(qText);
-                    qBox.appendChild(ansBtn);
-                    qBox.appendChild(aText);
+                    qBox.innerHTML = `
+                        <strong style="font-size:1.1em; color:#d35400;">Q${idx+1}: ${qItem.q}</strong>
+                        <button class="action-btn" style="padding:10px; font-size:1em; margin-top:10px;" onclick="this.nextElementSibling.style.display='block'; this.style.display='none';">💡 看答案</button>
+                        <p style="display:none; color:#2c3e50; font-weight:bold; margin-top:10px; background:#e0f7fa; padding:10px; border-radius:5px;">解答：${qItem.a}</p>
+                    `;
                     container.appendChild(qBox);
                 });
-                
-                // 渲染本週建議與祈禱
+
                 if (devotion) {
                     const devBox = document.createElement('div');
-                    devBox.style.marginTop = '30px';
-                    devBox.style.padding = '20px';
-                    devBox.style.background = '#f0f8ff';
-                    devBox.style.borderRadius = '15px';
-                    devBox.style.borderLeft = '5px solid #2980b9';
-                    devBox.style.boxShadow = '0 4px 10px rgba(0,0,0,0.05)';
+                    devBox.style.background = "#fffdf5";
+                    devBox.style.padding = "15px";
+                    devBox.style.borderRadius = "8px";
+                    devBox.style.marginTop = "25px";
+                    devBox.style.border = "2px dashed #f1c40f";
                     devBox.innerHTML = `
-                        <h3 style="color:#2980b9; margin-top:0; margin-bottom:15px; border-bottom:2px solid #dcdde1; padding-bottom:10px;">🌟 本週親子建議與祈禱</h3>
-                        <div style="margin-bottom:15px;">
+                        <div style="margin-bottom: 15px;">
                             <strong style="color:#2c3e50; font-size:1.1em;">💡 親子建議：</strong>
                             <p style="margin:5px 0 0 0; color:#34495e; line-height:1.5;">${devotion.advice}</p>
                         </div>
@@ -971,77 +897,75 @@
                     container.appendChild(devBox);
                 }
             }
-            
             navigateTo('iq-section');
         }
 
-        // ==========================================
         // 導師管理後台
-        // ==========================================
         function loadAdminPanel() {
             navigateTo('admin-section');
             const recordBody = document.getElementById('admin-recordings-body');
             recordBody.innerHTML = "<tr><td colspan='3'>載入中...</td></tr>";
+            
             db.collection("recordings").where("status", "==", "pending").onSnapshot(snapshot => {
-                recordBody.innerHTML = snapshot.empty ? '<tr><td colspan="3" style="color:#7f8c8d;">目前沒有需要批改的錄音。</td></tr>' : '';
+                recordBody.innerHTML = snapshot.empty ? "<tr><td colspan='3'>沒有待批改的錄音</td></tr>" : "";
                 snapshot.forEach(doc => {
-                    const data = doc.data(); const tr = document.createElement('tr');
-                    tr.innerHTML = `<td><strong>${data.studentName}</strong></td>
-                                    <td><audio controls src="${data.audioUrl}" style="height:35px; width:100%;"></audio></td>
-                                    <td style="display: flex; flex-direction: column; gap: 6px;">
-                                        <button class="score-adjust-btn" style="background:#2ecc71;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'excellent')">🌟 非常好 (100分)</button>
-                                        <button class="score-adjust-btn" style="background:#f39c12;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'pass')">✅ 及格 (50分)</button>
-                                        <button class="score-adjust-btn" style="background:#e74c3c;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'try_again')">💪 仍需努力 (20分)</button>
-                                    </td>`;
-                    recordBody.appendChild(tr);
+                    const data = doc.data();
+                    recordBody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:bold; color:#2c3e50;">${data.userName}<br><span style="font-size:0.8em; color:#7f8c8d;">第 ${data.week} 週</span></td>
+                            <td><audio src="${data.audioUrl}" controls style="width:100%; height:30px;"></audio></td>
+                            <td>
+                                <button class="score-adjust-btn" style="background:#27ae60; margin-bottom:5px;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'excellent')">非常好 (100)</button>
+                                <button class="score-adjust-btn" style="background:#f39c12; margin-bottom:5px;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'pass')">及格 (50)</button>
+                                <button class="score-adjust-btn" style="background:#e74c3c;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'try_again')">仍需努力 (20)</button>
+                            </td>
+                        </tr>`;
                 });
             });
 
-            const tbody = document.getElementById('admin-table-body');
-            tbody.innerHTML = "<tr><td colspan='5'>資料同步中...</td></tr>";
-            db.collection("users").where("role", "!=", "admin").onSnapshot((qs) => {
-                tbody.innerHTML = "";
-                qs.forEach((doc) => {
-                    const id = doc.id; const d = doc.data(); const tr = document.createElement('tr');
-                    tr.innerHTML = `<td><strong>${d.name}</strong><button class="rename-btn" onclick="renameStudent('${id}', '${d.name}')">✏️</button><br><span style="font-size:0.7em; color:#95a5a6;">${id}</span></td>
-                                    <td><span style="color:#2980b9; font-weight:bold;">${d.attendance_score || 0}</span></td>
-                                    <td><span style="color:#e67e22; font-weight:bold;">${d.performance_score || 0}</span></td>
-                                    <td><strong style="color:#f39c12;">${d.coins || 0}</strong></td>
-                                    <td style="display: flex; flex-direction: column; gap: 4px;">
-                                        <button class="score-adjust-btn" style="background:#34495e;" onclick="adjustStudentMetric('${id}', 'attendance_score', 30)">+30 出席</button>
-                                        <button class="score-adjust-btn" style="background:#34495e;" onclick="adjustStudentMetric('${id}', 'performance_score', 10)">+10 表現</button>
-                                    </td>`;
-                    tbody.appendChild(tr);
+            db.collection("users").where("role", "==", "student").onSnapshot(snapshot => {
+                const tbody = document.getElementById('admin-table-body');
+                tbody.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const student = doc.data();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:bold;">${student.name} <button class="rename-btn" onclick="renameStudent('${doc.id}', '${student.name}')">✏️</button></td>
+                            <td>${student.attendance_score || 0}</td>
+                            <td>${student.performance_score || 0}</td>
+                            <td style="color:#f39c12; font-weight:bold;">${student.coins || 0}</td>
+                            <td>
+                                <button class="score-adjust-btn" style="background:#3498db; margin-bottom:5px;" onclick="adjustStudentMetric('${doc.id}', 'attendance_score', 10)">+ 出席</button>
+                                <button class="score-adjust-btn" style="background:#9b59b6;" onclick="adjustStudentMetric('${doc.id}', 'performance_score', 10)">+ 表現</button>
+                            </td>
+                        </tr>`;
                 });
             });
         }
 
-        function renameStudent(id, curName) {
-            const newName = prompt("請輸入真實姓名：", curName);
+        function renameStudent(id, oldName) {
+            const newName = prompt("請輸入新姓名：", oldName);
             if (newName && newName.trim()) db.collection("users").doc(id).update({ name: newName.trim() }).catch(e => alert("更新失敗"));
         }
         
         function reviewRecording(rId, uId, status) {
             db.collection("recordings").doc(rId).update({ status: status });
             
-            let coinReward = 0;
-            let msg = "";
-
+            let coinReward = 0; let msg = ""; let gradeLabel = "";
             if (status === 'excellent') {
-                coinReward = 100;
-                msg = "🎉 你的錄音表現【非常好】，獲得 100 金幣！";
+                coinReward = 100; msg = "🎉 你的錄音表現【非常好】，獲得 100 金幣！"; gradeLabel = "非常好";
             } else if (status === 'pass') {
-                coinReward = 50;
-                msg = "🎉 你的錄音已經【及格】，獲得 50 金幣！";
+                coinReward = 50; msg = "🎉 你的錄音已經【及格】，獲得 50 金幣！"; gradeLabel = "及格";
             } else if (status === 'try_again') {
-                coinReward = 20;
-                msg = "💪 你的錄音【仍需努力】，獲得 20 金幣當作鼓勵，下次會更好！";
+                coinReward = 20; msg = "💪 你的錄音【仍需努力】，獲得 20 金幣當作鼓勵，下次會更好！"; gradeLabel = "仍需努力";
             }
 
             db.collection("users").doc(uId).update({ 
                 coins: firebase.firestore.FieldValue.increment(coinReward),
                 unread_notification: msg
             }); 
+            
+            addScoreHistory(uId, `金句錄音批改 (${gradeLabel})`, coinReward); // 寫入紀錄
             showNotification(`批改完成！已發放 ${coinReward} 金幣並通知學生。`); 
         }
         
@@ -1051,8 +975,20 @@
                 [field]: firebase.firestore.FieldValue.increment(inc), 
                 coins: firebase.firestore.FieldValue.increment(inc),
                 unread_notification: `🎉 導師剛剛為你加上了 ${inc} 分的${typeName}！`
-            }).then(() => showNotification("加分並通知成功！"));
+            }).then(() => {
+                addScoreHistory(id, `導師加分 (${typeName})`, inc); // 寫入紀錄
+                showNotification("加分並通知成功！");
+            });
         }
+
+        window.onload = () => {
+            if (auth.currentUser) {
+                bindUserData(auth.currentUser.uid);
+                document.getElementById('status-bar').style.display = 'flex';
+                document.getElementById('logout-btn').style.display = 'block';
+                navigateTo('main-menu');
+            }
+        };
     </script>
 </body>
 </html>
