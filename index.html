@@ -4,294 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🔥🦁火焰與獅子：勇者傳說</title>
-    
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
-
     <style>
-        :root {
-            --blue: #2393f5; --blue-dark: #03c2cc;
-            --green: #1ec555; --green-dark: #38f9d7;
-            --orange: #fa709a; --orange-dark: #fee140;
-            --dark: #2c3e50;
-            --bg-top: #e0c3fc; --bg-bottom: #8ec5fc;
-            --text-dark: #2c3e50;
-        }
-
-        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: linear-gradient(135deg, var(--bg-top) 0%, var(--bg-bottom) 100%); background-attachment: fixed; color: var(--text-dark); margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-
-        .app-header { width: 100%; background: rgba(255, 255, 255, 0.95); padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; box-sizing: border-box; min-height: 65px; }
-        .back-btn, .logout-btn { position: absolute; background: #f1f2f6; border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; color: #2c3e50; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 0.9em; }
-        .back-btn { left: 15px; display: none; }
-        .logout-btn { right: 15px; display: none; background: #ff7675; color: white; }
-        
-        .header-titles { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .sub-title { font-size: 0.85em; color: #7f8c8d; font-weight: bold; margin-bottom: 3px; letter-spacing: 1px; }
-        .app-title { margin: 0; font-size: 1.3em; font-weight: 900; color: #34495e; }
-
-        .content-area { width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box; flex-grow: 1; }
-
-        .status-bar { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; text-align: center; font-weight: 900; font-size: 1.2em; display: flex; justify-content: space-around; }
-        .user-tag { color: #34495e; }
-        .coin-tag { color: #f39c12; }
-
-        .page { display: none; animation: fadeIn 0.3s ease-in-out; }
+        :root { --blue: #2393f5; --green: #1ec555; --orange: #f39c12; --purple: #8e44ad; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: #eef2f3; color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .page { display: none; width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        .menu-container { display: flex; flex-direction: column; gap: 15px; }
-        .mode-btn { padding: 18px 20px; border: none; border-radius: 15px; color: white; cursor: pointer; width: 100%; text-align: left; display: flex; align-items: center; font-size: 1.2em; font-weight: bold; transition: transform 0.1s; }
-        .btn-blue { background: linear-gradient(45deg, var(--blue), var(--blue-dark)); box-shadow: 0 4px 0 #2980b9; }
-        .btn-green { background: linear-gradient(45deg, var(--green), var(--green-dark)); box-shadow: 0 4px 0 #27ae60; color: #111; }
-        .btn-orange { background: linear-gradient(45deg, #f39c12, #e67e22); box-shadow: 0 4px 0 #d35400; color: white; }
-        .btn-purple { background: linear-gradient(45deg, #9b59b6, #8e44ad); box-shadow: 0 4px 0 #732d91; color: white; }
-        .btn-admin { background: #2c3e50; box-shadow: 0 4px 0 #1a252f; display: none; }
-        
-        .btn-locked { background: #e0e0e0; box-shadow: 0 4px 0 #bdc3c7; color: #7f8c8d; cursor: not-allowed; }
-        .mode-btn:active:not(.btn-locked) { transform: translateY(4px); box-shadow: none; }
-
-        .game-card { background: white; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
-        .game-title { font-size: 1.5em; font-weight: 900; margin-top: 0; margin-bottom: 20px; }
-
-        .auth-form input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ecf0f1; border-radius: 8px; box-sizing: border-box; font-size: 1.1em; }
-        .auth-btn { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; }
-        
-        .admin-table-wrapper { overflow-x: auto; margin-top: 15px; margin-bottom: 30px; }
-        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: center; min-width: 500px; }
-        .admin-table th, .admin-table td { border: 1px solid #ddd; padding: 10px 6px; }
-        .admin-table th { background-color: #f8f9fa; font-weight: bold; }
-        .score-adjust-btn { color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .score-adjust-btn:active { transform: translateY(2px); box-shadow: none; }
-        .rename-btn { border: none; background: none; cursor: pointer; font-size: 1.1em; transition: transform 0.2s; }
-        .rename-btn:hover { transform: scale(1.2); }
-
-        .verse-box { background: #f8f9fa; border-left: 5px solid #4facfe; padding: 15px; border-radius: 0 8px 8px 0; font-size: 1.2em; margin-bottom: 20px; text-align: left; line-height: 1.5; min-height: 80px; }
-        .action-btn { background: #ff4757; color: white; padding: 15px; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; width: 100%; cursor: pointer; box-shadow: 0 4px 0 #c0392b; margin-top: 10px; }
-        .action-btn.submit { background: #2ecc71; box-shadow: 0 4px 0 #27ae60; }
-        
-        .quiz-btn { padding: 15px; font-size: 1.1em; border-radius: 10px; border: 2px solid #ecf0f1; background: white; width: 100%; text-align: left; font-weight: bold; margin-bottom: 12px; cursor: pointer; transition: background 0.2s; }
-        .quiz-btn:hover { background: #fcfcfc; }
-        audio { width: 100%; margin-top: 15px; outline: none; }
-
-        .theme-reminder { margin-top: 25px; padding: 15px; background: #fffdf5; border-left: 5px solid #f39c12; border-radius: 8px; text-align: left; font-size: 1.05em; font-weight: bold; color: #d35400; box-shadow: 0 2px 5px rgba(0,0,0,0.05); line-height: 1.4; }
-
-        #notification-toast { display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: white; padding: 15px 25px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 9999; font-weight: bold; text-align: center; animation: fadeInDown 0.5s ease-out; width: 80%; max-width: 400px; }
-        @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .game-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .mode-btn { width: 100%; padding: 15px; border: none; border-radius: 10px; color: white; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
+        .score-adjust-btn { padding: 5px 10px; margin: 2px; border: none; border-radius: 5px; cursor: pointer; color: white; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
-    <div id="notification-toast"><span id="toast-msg"></span></div>
-
-    <!-- 學生詳細紀錄 Modal -->
-    <div id="student-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; animation: fadeIn 0.2s;">
-        <div class="game-card" style="width:100%; max-width:400px; max-height:85vh; overflow-y:auto; position:relative; text-align:left; padding-top: 40px;">
-            <button onclick="document.getElementById('student-modal').style.display='none'" style="position:absolute; top:15px; right:15px; background:#e74c3c; color:white; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">X</button>
-            <h3 id="modal-title" style="color:#2980b9; margin-top:0; border-bottom:2px solid #ecf0f1; padding-bottom:10px;">學生紀錄</h3>
-            <div id="modal-content" style="font-size:0.95em; line-height:1.6; color:#34495e;">載入中...</div>
+    <div id="login-section" class="page active">
+        <div class="game-card">
+            <h2>登入系統</h2>
+            <input type="text" id="username" placeholder="學生 ID" style="width:100%; padding:10px; box-sizing:border-box; margin-bottom:10px;">
+            <button onclick="loginUser()" style="width:100%; padding:10px; background:var(--blue); color:white; border:none; cursor:pointer;">登入</button>
         </div>
     </div>
 
-    <header class="app-header">
-        <button id="back-btn" class="back-btn" onclick="goBack()">◀ 返回</button>
-        <div class="header-titles">
-            <div class="sub-title">聖公會主誕堂暑期 2026</div>
-            <h1 class="app-title">🔥🦁火焰與獅子：勇者傳說</h1>
-        </div>
-        <button id="logout-btn" class="logout-btn" onclick="logoutUser()">登出</button>
-    </header>
-
-    <div class="content-area">
-        
-        <div id="login-section" class="page active">
-            <div class="game-card auth-form">
-                <h2 class="game-title">小勇士登入系統</h2>
-                <input type="text" id="username" placeholder="輸入導師分發的學生 ID" autocomplete="off" />
-                <button class="auth-btn" onclick="loginUser()">登入挑戰</button>
-            </div>
-        </div>
-
-        <div id="status-bar" class="status-bar" style="display: none;">
-            <span class="user-tag">👤 <span id="user-name">載入中...</span></span>
-            <span class="coin-tag">💰 <span id="coin-count">0</span></span>
-        </div>
-
-        <div id="main-menu" class="page">
-            <div class="menu-container">
-                <button class="mode-btn btn-blue" onclick="openWeekSelector('verse')">
-                    <span style="font-size:1.8em; margin-right:15px;">🎤</span> 
-                    <div>背誦聖經金句<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">錄音上傳領取獎勵 (每週3次)</span></div>
-                </button>
-                <button class="mode-btn btn-green" onclick="openWeekSelector('quiz')">
-                    <span style="font-size:1.8em; margin-right:15px;">🧠</span> 
-                    <div>勇者問答挑戰<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">每週精選聖經問答 (每週2次)</span></div>
-                </button>
-                <button class="mode-btn btn-orange" onclick="openWeekSelector('iq')">
-                    <span style="font-size:1.8em; margin-right:15px;">👨‍👩‍👧‍👦</span> 
-                    <div>親子互動與IQ題<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">親子共樂時光 (無限次數)</span></div>
-                </button>
-                <button id="score-history-btn" class="mode-btn btn-purple" onclick="navigateTo('score-history-section')" style="display: none;">
-                    <span style="font-size:1.8em; margin-right:15px;">📜</span> 
-                    <div>我的分數紀錄<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">查看過往所有加分詳情</span></div>
-                </button>
-                <button id="admin-btn" class="mode-btn btn-admin" onclick="loadAdminPanel()">
-                    <span style="font-size:1.8em; margin-right:15px;">📊</span> 
-                    <div>導師管理台<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">批改錄音與進度追蹤</span></div>
-                </button>
-            </div>
-        </div>
-
-        <!-- 頁面區域 -->
-        <div id="score-history-section" class="page">
-            <div class="game-card" style="padding: 20px 10px;">
-                <h2 class="game-title" style="color: #8e44ad; margin-bottom: 10px;">📜 我的分數紀錄</h2>
-                <div class="admin-table-wrapper" style="max-height: 400px; overflow-y: auto;">
-                    <table class="admin-table">
-                        <thead>
-                            <tr><th>時間</th><th>項目</th><th>金幣</th></tr>
-                        </thead>
-                        <tbody id="score-history-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="week-select-section" class="page">
-            <div class="game-card">
-                <h2 class="game-title" id="week-title" style="color: #2c3e50;">選擇週數</h2>
-                <div class="menu-container" id="week-buttons-container"></div>
-            </div>
-        </div>
-
-        <div id="record-section" class="page">
-            <div class="game-card">
-                <h2 class="game-title" style="color: #2980b9;"><span id="verse-title">背誦金句</span></h2>
-                <div class="verse-box"><strong id="verse-text" style="color: #2c3e50;">載入中...</strong></div>
-                <button id="start-record-btn" class="action-btn" onclick="startRecording()">🔴 開始錄音</button>
-                <button id="stop-record-btn" class="action-btn" style="background:#34495e; display:none;" onclick="stopRecording()">⏹️ 停止錄音</button>
-                <audio id="audio-playback" controls style="display: none;"></audio>
-                <button id="upload-record-btn" class="action-btn submit" style="display:none;" onclick="uploadRecording()">📤 上傳給導師批改</button>
-                <div id="record-theme-reminder" class="theme-reminder"></div>
-            </div>
-        </div>
-
-        <div id="quiz-section" class="page">
-            <div class="game-card">
-                <h2 class="game-title" style="color: #27ae60;"><span id="quiz-title">問答挑戰</span></h2>
-                <div style="font-weight:bold; margin-bottom: 18px;">進度：第 <span id="quiz-progress" style="color:#27ae60;">1</span> 題</div>
-                <div id="question-text" style="font-size:1.15em; font-weight:bold; margin-bottom: 20px;"></div>
-                <div id="options-container"></div>
-                <div id="quiz-theme-reminder" class="theme-reminder"></div>
-            </div>
-        </div>
-
-        <div id="iq-section" class="page">
-            <div class="game-card">
-                <h2 class="game-title" style="color: #e67e22;">親子互動與IQ題</h2>
-                <div id="iq-container"></div>
-            </div>
-        </div>
-
-        <div id="admin-section" class="page">
-            <div class="game-card" style="padding: 20px 10px;">
-                <h2 class="game-title">📊 導師管理台</h2>
-                <h3 style="color:#2980b9;">🎧 待批改錄音</h3>
-                <div class="admin-table-wrapper"><table class="admin-table"><tbody id="admin-recordings-body"></tbody></table></div>
-                <h3 style="color:#27ae60;">📝 全體成績</h3>
-                <div class="admin-table-wrapper"><table class="admin-table"><thead><tr><th>姓名</th><th>問答(對/錯)</th><th>出席</th><th>表現</th><th>金幣</th><th>操作</th></tr></thead><tbody id="admin-table-body"></tbody></table></div>
-            </div>
+    <div id="main-menu" class="page">
+        <div id="status-bar" class="game-card" style="display:none; text-align:center;">👤 <span id="user-name"></span> | 💰 <span id="coin-count">0</span></div>
+        <div class="menu-container">
+            <button class="mode-btn" style="background:var(--blue)" onclick="openWeekSelector('verse')">🎤 背金句</button>
+            <button class="mode-btn" style="background:var(--green)" onclick="openWeekSelector('quiz')">🧠 問答挑戰</button>
+            <button id="admin-btn" class="mode-btn" style="background:var(--text); display:none" onclick="loadAdminPanel()">📊 管理台</button>
         </div>
     </div>
 
     <script>
-        let currentSelectedWeek = 1; 
-        let navigationHistory = []; 
-        let currentUserDoc = null;
-        let currentUserId = null;
         const UNIVERSAL_PASSWORD = "SummerCamp2026!";
-        const weeklyThemes = { 1: "🚫不向偶像低頭【決心】", 2: "🔮揭開異夢奧祕【智慧】", 3: "🔥火窯中的朋友【忠心】", 4: "😤驕傲人的結局【謙卑】", 5: "🙏不停止的禱告【堅持】", 6: "🦁封住獅子的口【信心】" };
-        const versesData = { 1: "「但以理卻立志不以王的膳和王所飲的酒玷污自己。」(但以理書 1:8上)", 2: "「上帝的名是應當稱頌的！從亙古直到永遠，因為智慧能力都屬乎他。」(但以理書 2:20)", 3: "「我們所事奉的上帝能將我們從烈火的窯中救出來。」(但以理書 3:17)", 4: "「好叫世人知道至高者在人的國中掌權，要將國賜與誰就賜與誰。」(但以理書 4:37中)", 5: "「但以理一日三次雙膝跪在他上帝面前，禱告感謝，與素常一樣。」(但以理書 6:10下)", 6: "「我的上帝差遣使者封住獅子的口，叫獅子不傷我。」(但以理書 6:22上)" };
-        const quizDataAll = { 1: [{ q: "但以理和他的三個朋友被帶到了哪一個國家的王宮？", options: ["巴比倫國", "波斯國", "埃及國"], a: 0 }, { q: "但以理決心不吃王的膳食和酒，是為了在上帝面前保持什麼？", options: ["身體強壯", "聖潔不玷污自己", "聰明智慧"], a: 1 }, { q: "但以理向誰提出請求，求他容自己不吃王膳？", options: ["尼布甲尼撒王", "太監長", "護衛長"], a: 1 }, { q: "太監長原本擔心但以理他們只吃素菜白水會變得如何？", options: ["面貌比其他人俊美", "面貌顯得枯瘦難看", "身體過於肥胖"], a: 1 }, { q: "但以理提議測試他們吃素菜喝白水多少天？", options: ["3天", "7天", "10天"], a: 2 }, { q: "測試結束後，但以理和朋友的容貌看起來怎樣？", options: ["比吃王膳的人更肥胖俊美", "面黃肌瘦", "沒有任何改變"], a: 0 }, { q: "上帝賜給這四個少年人什麼特別的恩賜？", options: ["聰明知識", "製造武器的技術", "治理國家的財富"], a: 0 }, { q: "但以理特別明白什麼奧秘？", options: ["各國的語言與文字", "各種的異象和夢兆", "星象與天氣變化"], a: 1 }, { q: "尼布甲尼撒王考查他們後，發現他們的智慧比全國的術士勝過多少倍？", options: ["兩倍", "五倍", "十倍"], a: 2 }, { q: "第1課的主題教導我們學習什麼品格？", options: ["決心", "謙卑", "堅持"], a: 0 }], 2: [], 3: [], 4: [], 5: [], 6: [] }; // 其他週數題目請自行補充
-
-        const firebaseConfig = { apiKey: "AIzaSyCyOgghNZaV8y9yAkTXL5M3SyL7s7oABuY", authDomain: "hncvbs-4e033.firebaseapp.com", projectId: "hncvbs-4e033", storageBucket: "hncvbs-4e033.appspot.com", messagingSenderId: "1048162479697", appId: "1:1048162479697:web:986c9898d56643e6791270", measurementId: "G-KX66VPH3B7" };
-        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(); const db = firebase.firestore();
 
-        function showNotification(msg, color = "#2ecc71") { const toast = document.getElementById('notification-toast'); document.getElementById('toast-msg').innerText = msg; toast.style.background = color; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 4500); }
-        function addScoreHistory(uid, itemName, pointsEarned) { db.collection("score_history").add({ uid: uid, item: itemName, points: pointsEarned, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); }
-        
+        function loginUser() {
+            const username = document.getElementById('username').value.trim();
+            if(!username) return alert('請輸入 ID');
+            auth.signInWithEmailAndPassword(username + "@bible.local", UNIVERSAL_PASSWORD)
+                .then(u => { bindUserData(u.user.uid); navigateTo('main-menu'); })
+                .catch(e => alert("登入失敗"));
+        }
+
         function bindUserData(uid) {
-            db.collection("users").doc(uid).onSnapshot((doc) => {
+            db.collection("users").doc(uid).onSnapshot(doc => {
                 if (doc.exists) {
                     currentUserDoc = doc.data();
-                    document.getElementById('user-name').innerText = currentUserDoc.name || "小勇士";
-                    document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
-                    document.getElementById('admin-btn').style.display = currentUserDoc.role === 'admin' ? 'flex' : 'none';
-                    document.getElementById('score-history-btn').style.display = currentUserDoc.role === 'admin' ? 'none' : 'flex';
+                    document.getElementById('user-name').innerText = currentUserDoc.name;
+                    document.getElementById('coin-count').innerText = currentUserDoc.coins;
+                    document.getElementById('admin-btn').style.display = currentUserDoc.role === 'admin' ? 'block' : 'none';
+                } else {
+                    // 自動生成新使用者資料
+                    db.collection("users").doc(uid).set({ name: document.getElementById('username').value, coins: 0, role: 'student' });
                 }
             });
         }
-
-        function openWeekSelector(type) {
-            currentSelectedWeek = -1; // 初始化
-            const container = document.getElementById('week-buttons-container'); container.innerHTML = '';
-            for(let i = 1; i <= 6; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'mode-btn btn-blue';
-                btn.innerHTML = `<div>第 ${i} 週</div>`;
-                btn.onclick = () => {
-                    currentSelectedWeek = i;
-                    if(type === 'verse') startVerse(i);
-                    else if(type === 'quiz') startQuiz(i);
-                };
-                container.appendChild(btn);
-            }
-            navigateTo('week-select-section');
-        }
-
-        function startVerse(weekIndex) {
-            document.getElementById('verse-title').innerText = `第 ${weekIndex} 週背金句`;
-            document.getElementById('verse-text').innerText = versesData[weekIndex] || "準備中...";
-            navigateTo('record-section');
-        }
-
-        function startQuiz(weekIndex) {
-            currentQuizList = quizDataAll[weekIndex] || [];
-            currentQuizIndex = 0;
-            document.getElementById('quiz-title').innerText = `第 ${weekIndex} 週挑戰`;
-            navigateTo('quiz-section');
-            loadQuizQuestion();
-        }
-
-        function loadQuizQuestion() {
-            if (currentQuizIndex >= currentQuizList.length) { showNotification("挑戰完成！"); navigateTo('main-menu'); return; }
-            const qData = currentQuizList[currentQuizIndex];
-            document.getElementById('question-text').innerText = `${currentQuizIndex + 1}. ${qData.q}`;
-            const cont = document.getElementById('options-container'); cont.innerHTML = '';
-            qData.options.forEach((opt, idx) => {
-                const b = document.createElement('button'); b.innerText = opt; b.className = 'quiz-btn';
-                b.onclick = () => {
-                    const qDetail = `第 ${currentSelectedWeek} 週 Q${currentQuizIndex + 1}`;
-                    if(idx === qData.a) {
-                        db.collection("users").doc(currentUserId).update({ coins: firebase.firestore.FieldValue.increment(20), total_correct: firebase.firestore.FieldValue.increment(1) });
-                        addScoreHistory(currentUserId, `✅ 答對: ${qDetail}`, 20);
-                        showNotification("✅ 答對！");
-                    } else {
-                        db.collection("users").doc(currentUserId).update({ total_incorrect: firebase.firestore.FieldValue.increment(1) });
-                        addScoreHistory(currentUserId, `❌ 答錯: ${qDetail}`, 0);
-                        showNotification("❌ 答錯了！", "#e74c3c");
-                    }
-                    currentQuizIndex++; loadQuizQuestion();
-                };
-                cont.appendChild(b);
-            });
-        }
-        
-        // 其他邏輯維持不變，僅需將此 Script 覆蓋即可
-        function loginUser() { auth.signInWithEmailAndPassword(document.getElementById('username').value.trim() + "@bible.local", UNIVERSAL_PASSWORD).then(u => { currentUserId = u.user.uid; bindUserData(currentUserId); navigateTo('main-menu'); }); }
-        function logoutUser() { auth.signOut().then(() => location.reload()); }
     </script>
 </body>
 </html>
