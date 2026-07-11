@@ -615,24 +615,36 @@
         // ==========================================
         // 讀取用戶資料與分數紀錄
         // ==========================================
-        function bindUserData(uid) {
-            db.collection("users").doc(uid).onSnapshot((doc) => {
-                if (doc.exists) {
-                    currentUserDoc = doc.data();
-                    document.getElementById('user-name').innerText = currentUserDoc.name || "小勇士";
-                    document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
-                    document.getElementById('admin-btn').style.display = currentUserDoc.role === 'admin' ? 'flex' : 'none';
-                    
-                    document.getElementById('score-history-btn').style.display = currentUserDoc.role === 'admin' ? 'none' : 'flex';
-                    
-                    if (currentUserDoc.unread_notification && currentUserDoc.role !== 'admin') {
-                        showNotification(currentUserDoc.unread_notification);
-                        db.collection("users").doc(uid).update({
-                            unread_notification: firebase.firestore.FieldValue.delete()
-                        });
-                    }
-                }
+function bindUserData(uid) {
+    db.collection("users").doc(uid).onSnapshot((doc) => {
+        if (doc.exists) {
+            currentUserDoc = doc.data();
+            document.getElementById('user-name').innerText = currentUserDoc.name || "小勇士";
+            document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
+            
+            // 處理導師管理台按鈕顯示
+            if (currentUserDoc.role === 'admin') {
+                document.getElementById('admin-btn').style.display = 'flex';
+            } else {
+                document.getElementById('admin-btn').style.display = 'none';
+            }
+        } else {
+            // 當 Firestore 找不到此人時，自動建立一份預設資料
+            db.collection("users").doc(uid).set({
+                name: "小勇士", // 預設顯示名稱
+                coins: 0,
+                role: "student",
+                attendance_score: 0,
+                performance_score: 0,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                console.log("已自動於 Firestore 建立新使用者資料！");
+            }).catch((error) => {
+                console.error("建立資料失敗：", error);
             });
+        }
+    });
+}
 
             db.collection("score_history")
               .where("uid", "==", uid)
