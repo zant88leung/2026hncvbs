@@ -130,10 +130,10 @@
         .auth-btn { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; }
         
         .admin-table-wrapper { overflow-x: auto; margin-top: 15px; margin-bottom: 30px; }
-        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: center; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: center; min-width: 500px; }
         .admin-table th, .admin-table td { border: 1px solid #ddd; padding: 10px 6px; }
         .admin-table th { background-color: #f8f9fa; font-weight: bold; }
-        .score-adjust-btn { color: white; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.9em; width: 100%; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .score-adjust-btn { color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .score-adjust-btn:active { transform: translateY(2px); box-shadow: none; }
         .rename-btn { border: none; background: none; cursor: pointer; font-size: 1.1em; transition: transform 0.2s; }
         .rename-btn:hover { transform: scale(1.2); }
@@ -161,6 +161,14 @@
 <body>
 
     <div id="notification-toast"><span id="toast-msg"></span></div>
+
+    <div id="student-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; animation: fadeIn 0.2s;">
+        <div class="game-card" style="width:100%; max-width:400px; max-height:85vh; overflow-y:auto; position:relative; text-align:left; padding-top: 40px;">
+            <button onclick="document.getElementById('student-modal').style.display='none'" style="position:absolute; top:15px; right:15px; background:#e74c3c; color:white; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">X</button>
+            <h3 id="modal-title" style="color:#2980b9; margin-top:0; border-bottom:2px solid #ecf0f1; padding-bottom:10px;">學生紀錄</h3>
+            <div id="modal-content" style="font-size:0.95em; line-height:1.6; color:#34495e;">載入中...</div>
+        </div>
+    </div>
 
     <header class="app-header">
         <button id="back-btn" class="back-btn" onclick="goBack()">◀ 返回</button>
@@ -301,10 +309,11 @@
                         <thead>
                             <tr>
                                 <th>姓名</th>
-                                <th>出席分</th>
-                                <th>表現分</th>
-                                <th>總金幣</th>
-                                <th>手動加分</th>
+                                <th>問答<br>(對/錯)</th>
+                                <th>出席</th>
+                                <th>表現</th>
+                                <th>金幣</th>
+                                <th>操作 (加減分與詳情)</th>
                             </tr>
                         </thead>
                         <tbody id="admin-table-body"></tbody>
@@ -371,7 +380,7 @@
         }
 
         // ==========================================
-        // 七週的主題設定
+        // 七週的主題與題庫設定 (省略部分重複代碼，確保結構完整)
         // ==========================================
         const weeklyThemes = {
             1: "🚫不向偶像低頭【決心】", 2: "🔮揭開異夢奧祕【智慧】", 3: "🔥火窯中的朋友【忠心】", 
@@ -387,9 +396,6 @@
             6: "「我的上帝差遣使者封住獅子的口，叫獅子不傷我。」(但以理書 6:22上)"
         };
 
-       // ==========================================
-        // 六週的問答題庫設定
-        // ==========================================
         const quizDataAll = {
             1: [
                 { q: "但以理和他的三個朋友被帶到了哪一個國家的王宮？", options: ["巴比倫國", "波斯國", "埃及國"], a: 0 },
@@ -465,9 +471,6 @@
             ]
         };
 
-        // ==========================================
-        // 每週親子 IQ 題庫設定 (共 36 題，每週 6 題)
-        // ==========================================
         const iqDataAll = {
             1: [
                 { q: "冰塊最想做什麼事？", a: "答案是退伍 ，因為他當冰很久了。" },
@@ -519,37 +522,15 @@
             ]
         };
 
-        // ==========================================
-        // 每週親子建議及祈禱設定 (1-6 週)
-        // ==========================================
         const familyDevotionData = {
-            1: {
-                advice: "與孩子一起訂立一個本週的「小目標」（例如：每天減少看螢幕 15 分鐘、主動幫忙做一件家務），並互相鼓勵，學習但以理不被外界誘惑的決心。",
-                prayer: "親愛的天父，求祢賜給我們一家人像但以理一樣的決心，在面對誘惑和困難時，依然能堅定地選擇做正確的事。阿們。"
-            },
-            2: {
-                advice: "家長可以分享一個最近遇到的小難題，邀請孩子一起動動腦筋給予建議。讓孩子明白，遇到不懂的事情時，可以像但以理一樣先安靜下來尋求上帝的智慧。",
-                prayer: "親愛的天父，讚美祢是賜智慧的神。求祢幫助我們在遇到難題時不慌張，懂得向祢祈求，並賜給我們聰明去解決問題。阿們。"
-            },
-            3: {
-                advice: "與孩子討論什麼是「真正的朋友」。可以一起製作一張小卡片，送給一位在困難中曾經幫助過自己的好朋友，學習沙得拉、米煞、亞伯尼歌彼此支持的忠心。",
-                prayer: "親愛的天父，謝謝祢無論在什麼環境下都與我們同在。求祢幫助我們對祢忠心，也教導我們成為別人生命中互相支持的好朋友。阿們。"
-            },
-            4: {
-                advice: "在晚餐或睡前，全家人輪流說出對方今天做得好的一件事，並互相說聲謝謝。學習看見別人的優點，明白我們擁有的一切能力都是上帝的恩典。",
-                prayer: "親愛的天父，求祢保守我們的心，不驕傲自大。幫助我們學會欣賞身邊的人，並時刻感恩祢賜給我們的一切。阿們。"
-            },
-            5: {
-                advice: "選擇一件簡單又有益的小事（例如：每天對家人說早安、睡前一起背一句金句），全家約定在這星期內堅持每天都做，體驗不停止的力量。",
-                prayer: "親愛的天父，求祢加添我們的力量，讓我們在做好事和祈禱上都能像但以理一樣堅持到底，不輕易放棄。阿們。"
-            },
-            6: {
-                advice: "家長與孩子互相分享一件自己心裡害怕的事情（心中的「獅子」），然後牽著手為彼此祈禱，將擔憂交給上帝，學習對神有完全的信心。",
-                prayer: "親愛的天父，當我們感到害怕或面對困難時，求祢賜給我們像但以理一樣的信心，相信祢會差遣使者保護我們。阿們。"
-            }
+            1: { advice: "與孩子一起訂立一個本週的「小目標」（例如：每天減少看螢幕 15 分鐘、主動幫忙做一件家務），並互相鼓勵，學習但以理不被外界誘惑的決心。", prayer: "親愛的天父，求祢賜給我們一家人像但以理一樣的決心，在面對誘惑和困難時，依然能堅定地選擇做正確的事。阿們。" },
+            2: { advice: "家長可以分享一個最近遇到的小難題，邀請孩子一起動動腦筋給予建議。讓孩子明白，遇到不懂的事情時，可以像但以理一樣先安靜下來尋求上帝的智慧。", prayer: "親愛的天父，讚美祢是賜智慧的神。求祢幫助我們在遇到難題時不慌張，懂得向祢祈求，並賜給我們聰明去解決問題。阿們。" },
+            3: { advice: "與孩子討論什麼是「真正的朋友」。可以一起製作一張小卡片，送給一位在困難中曾經幫助過自己的好朋友，學習沙得拉、米煞、亞伯尼歌彼此支持的忠心。", prayer: "親愛的天父，謝謝祢無論在什麼環境下都與我們同在。求祢幫助我們對祢忠心，也教導我們成為別人生命中互相支持的好朋友。阿們。" },
+            4: { advice: "在晚餐或睡前，全家人輪流說出對方今天做得好的一件事，並互相說聲謝謝。學習看見別人的優點，明白我們擁有的一切能力都是上帝的恩典。", prayer: "親愛的天父，求祢保守我們的心，不驕傲自大。幫助我們學會欣賞身邊的人，並時刻感恩祢賜給我們的一切。阿們。" },
+            5: { advice: "選擇一件簡單又有益的小事（例如：每天對家人說早安、睡前一起背一句金句），全家約定在這星期內堅持每天都做，體驗不停止的力量。", prayer: "親愛的天父，求祢加添我們的力量，讓我們在做好事和祈禱上都能像但以理一樣堅持到底，不輕易放棄。阿們。" },
+            6: { advice: "家長與孩子互相分享一件自己心裡害怕的事情（心中的「獅子」），然後牽著手為彼此祈禱，將擔憂交給上帝，學習對神有完全的信心。", prayer: "親愛的天父，當我們感到害怕或面對困難時，求祢賜給我們像但以理一樣的信心，相信祢會差遣使者保護我們。阿們。" }
         };
 
-        // 頁面導航
         function navigateTo(pageId) {
             if (pageId !== 'login-section') {
                 const currentActive = document.querySelector('.page.active');
@@ -574,17 +555,12 @@
                 const prevPage = navigationHistory.pop();
                 document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
                 document.getElementById(prevPage).classList.add('active');
-                
-                if (prevPage === 'main-menu') {
-                    document.getElementById('back-btn').style.display = 'none';
-                }
-            } else {
-                navigateTo('main-menu');
-            }
+                if (prevPage === 'main-menu') document.getElementById('back-btn').style.display = 'none';
+            } else { navigateTo('main-menu'); }
         }
 
         // ==========================================
-        // 登入
+        // 登入與資料綁定
         // ==========================================
         function loginUser() {
             const username = document.getElementById('username').value.trim();
@@ -612,9 +588,6 @@
             });
         }
 
-        // ==========================================
-        // 讀取用戶資料與分數紀錄 (修復自動生成機制)
-        // ==========================================
         function bindUserData(uid) {
             db.collection("users").doc(uid).onSnapshot((doc) => {
                 if (doc.exists) {
@@ -622,73 +595,50 @@
                     document.getElementById('user-name').innerText = currentUserDoc.name || "小勇士";
                     document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
                     document.getElementById('admin-btn').style.display = currentUserDoc.role === 'admin' ? 'flex' : 'none';
-                    
                     document.getElementById('score-history-btn').style.display = currentUserDoc.role === 'admin' ? 'none' : 'flex';
                     
                     if (currentUserDoc.unread_notification && currentUserDoc.role !== 'admin') {
                         showNotification(currentUserDoc.unread_notification);
-                        db.collection("users").doc(uid).update({
-                            unread_notification: firebase.firestore.FieldValue.delete()
-                        });
+                        db.collection("users").doc(uid).update({ unread_notification: firebase.firestore.FieldValue.delete() });
                     }
                 } else {
-                    // 【修復核心】如果資料庫中沒有這位學生的資料，就自動幫他建檔！
                     const inputName = document.getElementById('username').value.trim();
                     db.collection("users").doc(uid).set({
-                        name: inputName || '學生',
-                        coins: 0, 
-                        attendance_score: 0, 
-                        performance_score: 0, 
-                        total_correct: 0, 
-                        total_incorrect: 0,
-                        role: 'student', 
-                        last_play_date: new Date().toLocaleDateString()
-                    }).then(() => {
-                        console.log("新學生資料庫檔案已自動生成！");
-                    }).catch(error => {
-                        console.error("生成資料庫檔案失敗:", error);
+                        name: inputName || '學生', coins: 0, attendance_score: 0, performance_score: 0, total_correct: 0, total_incorrect: 0,
+                        role: 'student', last_play_date: new Date().toLocaleDateString()
                     });
                 }
             });
 
-            db.collection("score_history")
-              .where("uid", "==", uid)
-              .onSnapshot((snapshot) => {
-                  const tbody = document.getElementById('score-history-body');
-                  if (snapshot.empty) {
-                      tbody.innerHTML = '<tr><td colspan="3" style="color:#7f8c8d; padding:20px;">尚未有分數紀錄，繼續努力！</td></tr>';
-                      return;
-                  }
-                  
-                  let records = [];
-                  snapshot.forEach(doc => records.push(doc.data()));
-                  records.sort((a, b) => {
-                      const timeA = a.timestamp ? a.timestamp.toMillis() : Date.now();
-                      const timeB = b.timestamp ? b.timestamp.toMillis() : Date.now();
-                      return timeB - timeA;
-                  });
-
-                  tbody.innerHTML = '';
-                  records.forEach(data => {
-                      let dateStr = "剛剛";
-                      if (data.timestamp) {
-                          const d = data.timestamp.toDate();
-                          dateStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-                      }
-                      const tr = document.createElement('tr');
-                      tr.innerHTML = `
-                          <td style="font-size:0.85em; color:#7f8c8d;">${dateStr}</td>
-                          <td style="font-weight:bold; color:#2980b9;">${data.item}</td>
-                          <td style="color:#f39c12; font-weight:bold; font-size:1.1em;">+${data.points}</td>
-                      `;
-                      tbody.appendChild(tr);
-                  });
-              });
+            db.collection("score_history").where("uid", "==", uid).onSnapshot((snapshot) => {
+                const tbody = document.getElementById('score-history-body');
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="color:#7f8c8d; padding:20px;">尚未有分數紀錄，繼續努力！</td></tr>';
+                    return;
+                }
+                let records = [];
+                snapshot.forEach(doc => records.push(doc.data()));
+                records.sort((a, b) => {
+                    const timeA = a.timestamp ? a.timestamp.toMillis() : Date.now();
+                    const timeB = b.timestamp ? b.timestamp.toMillis() : Date.now();
+                    return timeB - timeA;
+                });
+                tbody.innerHTML = '';
+                records.forEach(data => {
+                    let dateStr = "剛剛";
+                    if (data.timestamp) {
+                        const d = data.timestamp.toDate();
+                        dateStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                    }
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td style="font-size:0.85em; color:#7f8c8d;">${dateStr}</td>
+                                    <td style="font-weight:bold; color:#2980b9;">${data.item}</td>
+                                    <td style="color:${data.points < 0 ? '#e74c3c' : '#f39c12'}; font-weight:bold; font-size:1.1em;">${data.points > 0 ? '+'+data.points : data.points}</td>`;
+                    tbody.appendChild(tr);
+                });
+            });
         }
 
-        // ==========================================
-        // 各功能邏輯
-        // ==========================================
         function openWeekSelector(type) {
             const container = document.getElementById('week-buttons-container');
             container.innerHTML = '';
@@ -732,7 +682,9 @@
             navigateTo('week-select-section');
         }
 
+        // ==========================================
         // 錄音功能
+        // ==========================================
         function startVerse(weekIndex) {
             currentSelectedWeek = weekIndex;
             document.getElementById('verse-text').innerText = versesData[weekIndex] || "本週金句導師尚在準備中...";
@@ -745,10 +697,8 @@
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                
                 const options = { audioBitsPerSecond: 8000 }; 
                 mediaRecorder = new MediaRecorder(stream, options);
-
                 audioChunks = [];
                 mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
                 mediaRecorder.onstop = () => {
@@ -780,27 +730,21 @@
 
         async function uploadRecording() {
             if (!audioBlob || !currentUserId) return;
-            
             const btn = document.getElementById('upload-record-btn');
             btn.innerText = "⏳ 上傳中..."; btn.disabled = true;
             
             const maxAttempts = 3;
             const usedAttempts = currentUserDoc ? (currentUserDoc[`verse_attempts_${currentSelectedWeek}`] || 0) : 0;
-            
             if (usedAttempts >= maxAttempts && currentUserDoc.role !== 'admin') {
-                alert("本週錄音上傳次數已用完！");
-                btn.innerText = "📤 上傳給導師批改"; btn.disabled = false;
-                return;
+                alert("本週錄音上傳次數已用完！"); btn.innerText = "📤 上傳給導師批改"; btn.disabled = false; return;
             }
 
             const studentName = (currentUserDoc ? currentUserDoc.name : '未知學生') + ` (第 ${currentSelectedWeek} 週)`;
 
             try {
                 const base64Audio = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(audioBlob);
+                    const reader = new FileReader(); reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject; reader.readAsDataURL(audioBlob);
                 });
 
                 if (currentUserDoc && currentUserDoc.role !== 'admin') {
@@ -808,20 +752,14 @@
                         [`verse_attempts_${currentSelectedWeek}`]: firebase.firestore.FieldValue.increment(1)
                     });
                 }
-
                 await db.collection("recordings").add({
-                    uid: currentUserId,
-                    userName: currentUserDoc.name || studentName,
-                    week: currentSelectedWeek,
-                    audioUrl: base64Audio,
-                    status: 'pending',
+                    uid: currentUserId, userName: currentUserDoc.name || studentName,
+                    week: currentSelectedWeek, audioUrl: base64Audio, status: 'pending',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
                 showNotification("📤 上傳成功！導師會盡快批改！");
                 openWeekSelector('verse'); 
-            } catch (error) {
-                alert("上傳失敗：" + error.message);
+            } catch (error) { alert("上傳失敗：" + error.message);
             } finally {
                 btn.innerText = "📤 上傳給導師批改"; btn.disabled = false;
                 document.getElementById('start-record-btn').innerText = "🔴 開始錄音";
@@ -832,20 +770,18 @@
             }
         }
 
-        // 問答功能
+        // ==========================================
+        // 問答功能 (加入答對/答錯詳細追蹤)
+        // ==========================================
         let currentQuizList = []; let currentQuizIndex = 0;
         function startQuiz(weekIndex) {
             if (currentUserDoc && currentUserDoc.role !== 'admin') {
-                db.collection("users").doc(currentUserId).update({
-                    [`quiz_attempts_${weekIndex}`]: firebase.firestore.FieldValue.increment(1)
-                });
+                db.collection("users").doc(currentUserId).update({ [`quiz_attempts_${weekIndex}`]: firebase.firestore.FieldValue.increment(1) });
             }
             currentSelectedWeek = weekIndex;
             document.getElementById('quiz-theme-reminder').innerText = "💡" + weeklyThemes[weekIndex];
             currentQuizList = quizDataAll[weekIndex] || [];
-            if(currentQuizList.length === 0) {
-                alert("這週的題目導師還在準備中喔！"); return;
-            }
+            if(currentQuizList.length === 0) { alert("這週的題目導師還在準備中喔！"); return; }
             currentQuizIndex = 0;
             navigateTo('quiz-section');
             loadQuizQuestion();
@@ -854,8 +790,7 @@
         function loadQuizQuestion() {
             if (currentQuizIndex >= currentQuizList.length) {
                 showNotification(`🎉 太棒了！你已完成第 ${currentSelectedWeek} 週的挑戰！`);
-                openWeekSelector('quiz'); 
-                return;
+                openWeekSelector('quiz'); return;
             }
             document.getElementById('quiz-progress').innerText = currentQuizIndex + 1 + " / " + currentQuizList.length;
             const qData = currentQuizList[currentQuizIndex];
@@ -864,8 +799,7 @@
             optionsContainer.innerHTML = '';
             qData.options.forEach((optText, idx) => {
                 const btn = document.createElement('button');
-                btn.innerText = optText;
-                btn.className = "quiz-btn";
+                btn.innerText = optText; btn.className = "quiz-btn";
                 btn.onclick = () => evaluateAnswer(idx, qData.a);
                 optionsContainer.appendChild(btn);
             });
@@ -874,19 +808,26 @@
         function evaluateAnswer(selectedIdx, correctIdx) {
             if(!currentUserId) return;
             const userRef = db.collection("users").doc(currentUserId);
+            
+            // 追蹤答題的詳細資訊 (第幾週第幾題)
+            const qDetailStr = `第 ${currentSelectedWeek} 週問答 Q${currentQuizIndex + 1}`;
+            
             if (selectedIdx === correctIdx) {
                 userRef.update({ coins: firebase.firestore.FieldValue.increment(20), total_correct: firebase.firestore.FieldValue.increment(1) });
-                addScoreHistory(currentUserId, `問答挑戰 (第 ${currentSelectedWeek} 週)`, 20); // 寫入紀錄
+                addScoreHistory(currentUserId, `✅ 答對: ${qDetailStr}`, 20); // 寫入詳細紀錄
                 showNotification("✅ 答對了！獲得 20 金幣！");
             } else {
                 userRef.update({ total_incorrect: firebase.firestore.FieldValue.increment(1) });
+                addScoreHistory(currentUserId, `❌ 答錯: ${qDetailStr}`, 0); // 寫入詳細紀錄，不給分
                 showNotification("❌ 答錯了，下一題繼續努力！", "#e74c3c");
             }
             currentQuizIndex++;
             loadQuizQuestion();
         }
 
+        // ==========================================
         // 親子IQ功能
+        // ==========================================
         function startIQ(weekIndex) {
             currentSelectedWeek = weekIndex;
             const iqList = iqDataAll[weekIndex] || [];
@@ -899,60 +840,45 @@
             } else {
                 iqList.forEach((qItem, idx) => {
                     const qBox = document.createElement('div');
-                    qBox.style.background = "#f8f9fa";
-                    qBox.style.padding = "15px";
-                    qBox.style.borderRadius = "8px";
-                    qBox.style.marginBottom = "15px";
-                    qBox.style.borderLeft = "5px solid #e67e22";
-                    
-                    qBox.innerHTML = `
-                        <strong style="font-size:1.1em; color:#d35400;">Q${idx+1}: ${qItem.q}</strong>
-                        <button class="action-btn" style="padding:10px; font-size:1em; margin-top:10px;" onclick="this.nextElementSibling.style.display='block'; this.style.display='none';">💡 看答案</button>
-                        <p style="display:none; color:#2c3e50; font-weight:bold; margin-top:10px; background:#e0f7fa; padding:10px; border-radius:5px;">解答：${qItem.a}</p>
-                    `;
+                    qBox.style.background = "#f8f9fa"; qBox.style.padding = "15px"; qBox.style.borderRadius = "8px";
+                    qBox.style.marginBottom = "15px"; qBox.style.borderLeft = "5px solid #e67e22";
+                    qBox.innerHTML = `<strong style="font-size:1.1em; color:#d35400;">Q${idx+1}: ${qItem.q}</strong>
+                                      <button class="action-btn" style="padding:10px; font-size:1em; margin-top:10px;" onclick="this.nextElementSibling.style.display='block'; this.style.display='none';">💡 看答案</button>
+                                      <p style="display:none; color:#2c3e50; font-weight:bold; margin-top:10px; background:#e0f7fa; padding:10px; border-radius:5px;">解答：${qItem.a}</p>`;
                     container.appendChild(qBox);
                 });
 
                 if (devotion) {
                     const devBox = document.createElement('div');
-                    devBox.style.background = "#fffdf5";
-                    devBox.style.padding = "15px";
-                    devBox.style.borderRadius = "8px";
-                    devBox.style.marginTop = "25px";
-                    devBox.style.border = "2px dashed #f1c40f";
-                    devBox.innerHTML = `
-                        <div style="margin-bottom: 15px;">
-                            <strong style="color:#2c3e50; font-size:1.1em;">💡 親子建議：</strong>
-                            <p style="margin:5px 0 0 0; color:#34495e; line-height:1.5;">${devotion.advice}</p>
-                        </div>
-                        <div>
-                            <strong style="color:#27ae60; font-size:1.1em;">🙏 親子祈禱：</strong>
-                            <p style="margin:5px 0 0 0; color:#34495e; line-height:1.5; font-style:italic;">「${devotion.prayer}」</p>
-                        </div>
-                    `;
+                    devBox.style.background = "#fffdf5"; devBox.style.padding = "15px"; devBox.style.borderRadius = "8px";
+                    devBox.style.marginTop = "25px"; devBox.style.border = "2px dashed #f1c40f";
+                    devBox.innerHTML = `<div style="margin-bottom: 15px;"><strong style="color:#2c3e50; font-size:1.1em;">💡 親子建議：</strong><p style="margin:5px 0 0 0; color:#34495e; line-height:1.5;">${devotion.advice}</p></div>
+                                        <div><strong style="color:#27ae60; font-size:1.1em;">🙏 親子祈禱：</strong><p style="margin:5px 0 0 0; color:#34495e; line-height:1.5; font-style:italic;">「${devotion.prayer}」</p></div>`;
                     container.appendChild(devBox);
                 }
             }
             navigateTo('iq-section');
         }
 
-        // 導師管理後台
+        // ==========================================
+        // 導師管理後台升級功能
+        // ==========================================
         function loadAdminPanel() {
             navigateTo('admin-section');
             const recordBody = document.getElementById('admin-recordings-body');
             recordBody.innerHTML = "<tr><td colspan='3'>載入中...</td></tr>";
             
             db.collection("recordings").where("status", "==", "pending").onSnapshot(snapshot => {
-                recordBody.innerHTML = snapshot.empty ? "<tr><td colspan='3'>沒有待批改的錄音</td></tr>" : "";
+                recordBody.innerHTML = snapshot.empty ? "<tr><td colspan='3' style='color:#7f8c8d;'>沒有待批改的錄音</td></tr>" : "";
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     recordBody.innerHTML += `
                         <tr>
                             <td style="font-weight:bold; color:#2c3e50;">${data.userName}<br><span style="font-size:0.8em; color:#7f8c8d;">第 ${data.week} 週</span></td>
                             <td><audio src="${data.audioUrl}" controls style="width:100%; height:30px;"></audio></td>
-                            <td>
-                                <button class="score-adjust-btn" style="background:#27ae60; margin-bottom:5px;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'excellent')">非常好 (100)</button>
-                                <button class="score-adjust-btn" style="background:#f39c12; margin-bottom:5px;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'pass')">及格 (50)</button>
+                            <td style="display:flex; flex-direction:column; gap:4px;">
+                                <button class="score-adjust-btn" style="background:#27ae60;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'excellent')">非常好 (100)</button>
+                                <button class="score-adjust-btn" style="background:#f39c12;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'pass')">及格 (50)</button>
                                 <button class="score-adjust-btn" style="background:#e74c3c;" onclick="reviewRecording('${doc.id}', '${data.uid}', 'try_again')">仍需努力 (20)</button>
                             </td>
                         </tr>`;
@@ -967,15 +893,70 @@
                     tbody.innerHTML += `
                         <tr>
                             <td style="font-weight:bold;">${student.name} <button class="rename-btn" onclick="renameStudent('${doc.id}', '${student.name}')">✏️</button></td>
-                            <td>${student.attendance_score || 0}</td>
-                            <td>${student.performance_score || 0}</td>
-                            <td style="color:#f39c12; font-weight:bold;">${student.coins || 0}</td>
-                            <td>
-                                <button class="score-adjust-btn" style="background:#3498db; margin-bottom:5px;" onclick="adjustStudentMetric('${doc.id}', 'attendance_score', 10)">+ 出席</button>
-                                <button class="score-adjust-btn" style="background:#9b59b6;" onclick="adjustStudentMetric('${doc.id}', 'performance_score', 10)">+ 表現</button>
+                            <td style="white-space: nowrap;"><span style="color:#27ae60; font-weight:bold;">✅${student.total_correct || 0}</span> / <span style="color:#e74c3c; font-weight:bold;">❌${student.total_incorrect || 0}</span></td>
+                            <td style="color:#2980b9; font-weight:bold;">${student.attendance_score || 0}</td>
+                            <td style="color:#8e44ad; font-weight:bold;">${student.performance_score || 0}</td>
+                            <td style="color:#f39c12; font-weight:bold; font-size:1.1em;">${student.coins || 0}</td>
+                            <td style="display:flex; flex-direction:column; gap:6px;">
+                                <div style="display:flex; gap:4px;">
+                                    <button class="score-adjust-btn" style="background:#3498db; flex:1;" onclick="adjustStudentMetric('${doc.id}', 'attendance_score', 10)">+10 出席</button>
+                                    <button class="score-adjust-btn" style="background:#e74c3c; width:40px;" onclick="adjustStudentMetric('${doc.id}', 'attendance_score', -10)">-10</button>
+                                </div>
+                                <div style="display:flex; gap:4px;">
+                                    <button class="score-adjust-btn" style="background:#9b59b6; flex:1;" onclick="adjustStudentMetric('${doc.id}', 'performance_score', 5)">+5 表現</button>
+                                    <button class="score-adjust-btn" style="background:#e74c3c; width:40px;" onclick="adjustStudentMetric('${doc.id}', 'performance_score', -5)">-5</button>
+                                </div>
+                                <button class="score-adjust-btn" style="background:#2c3e50;" onclick="openStudentModal('${doc.id}', '${student.name}')">🔍 檢視答題與加分紀錄</button>
                             </td>
                         </tr>`;
                 });
+            });
+        }
+
+        // 開啟學生詳細紀錄的彈出視窗
+        function openStudentModal(uid, studentName) {
+            document.getElementById('student-modal').style.display = 'flex';
+            document.getElementById('modal-title').innerText = `${studentName} 的詳細紀錄`;
+            const content = document.getElementById('modal-content');
+            content.innerHTML = '<div style="text-align:center;">載入中...</div>';
+
+            db.collection("score_history").where("uid", "==", uid).get().then(snapshot => {
+                if (snapshot.empty) {
+                    content.innerHTML = '<p style="text-align:center; color:#7f8c8d;">這名學生尚未有任何活動紀錄。</p>';
+                    return;
+                }
+                
+                let records = [];
+                snapshot.forEach(doc => records.push(doc.data()));
+                // 按照時間由新到舊排序
+                records.sort((a, b) => {
+                    const timeA = a.timestamp ? a.timestamp.toMillis() : 0;
+                    const timeB = b.timestamp ? b.timestamp.toMillis() : 0;
+                    return timeB - timeA;
+                });
+
+                let html = '<ul style="list-style-type: none; padding-left: 0; margin: 0;">';
+                records.forEach(data => {
+                    let dateStr = "剛剛";
+                    if (data.timestamp) {
+                        const d = data.timestamp.toDate();
+                        dateStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                    }
+                    
+                    let pointsHtml = "";
+                    if (data.points > 0) pointsHtml = `<span style="color:#27ae60; font-weight:bold;">(+${data.points})</span>`;
+                    else if (data.points < 0) pointsHtml = `<span style="color:#e74c3c; font-weight:bold;">(${data.points})</span>`;
+                    else pointsHtml = `<span style="color:#7f8c8d; font-weight:bold;">(0)</span>`;
+
+                    html += `<li style="margin-bottom: 12px; border-bottom: 1px solid #ecf0f1; padding-bottom: 8px;">
+                                <div style="font-size:0.85em; color:#95a5a6;">🕒 ${dateStr}</div>
+                                <div><strong style="color:#34495e;">${data.item}</strong> ${pointsHtml}</div>
+                             </li>`;
+                });
+                html += '</ul>';
+                content.innerHTML = html;
+            }).catch(e => {
+                content.innerHTML = "載入紀錄失敗：" + e.message;
             });
         }
 
@@ -1005,15 +986,24 @@
             showNotification(`批改完成！已發放 ${coinReward} 金幣並通知學生。`); 
         }
         
+        // 升級版：支援加分與扣分功能
         function adjustStudentMetric(id, field, inc) {
             const typeName = field === 'attendance_score' ? '出席分' : '表現分';
+            const actionName = inc > 0 ? '導師加分' : '導師扣回'; // 判斷是加分還是手滑扣回
+
             db.collection("users").doc(id).update({ 
                 [field]: firebase.firestore.FieldValue.increment(inc), 
-                coins: firebase.firestore.FieldValue.increment(inc),
-                unread_notification: `🎉 導師剛剛為你加上了 ${inc} 分的${typeName}！`
+                coins: firebase.firestore.FieldValue.increment(inc) // 同步加扣金幣
             }).then(() => {
-                addScoreHistory(id, `導師加分 (${typeName})`, inc);
-                showNotification("加分並通知成功！");
+                addScoreHistory(id, `${actionName} (${typeName})`, inc); // 寫入詳細紀錄
+
+                // 只有加分時才通知學生，扣回不彈出通知以免影響學生體驗
+                if (inc > 0) {
+                    db.collection("users").doc(id).update({
+                        unread_notification: `🎉 導師剛剛為你加上了 ${inc} 分的${typeName}！`
+                    });
+                }
+                showNotification(inc > 0 ? "加分成功！" : "扣分/復原成功！", inc > 0 ? "#2ecc71" : "#e74c3c");
             });
         }
 
