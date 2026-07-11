@@ -613,38 +613,43 @@
         }
 
         // ==========================================
-        // 讀取用戶資料與分數紀錄
+        // 讀取用戶資料與分數紀錄 (修復自動生成機制)
         // ==========================================
-function bindUserData(uid) {
-    db.collection("users").doc(uid).onSnapshot((doc) => {
-        if (doc.exists) {
-            currentUserDoc = doc.data();
-            document.getElementById('user-name').innerText = currentUserDoc.name || "小勇士";
-            document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
-            
-            // 處理導師管理台按鈕顯示
-            if (currentUserDoc.role === 'admin') {
-                document.getElementById('admin-btn').style.display = 'flex';
-            } else {
-                document.getElementById('admin-btn').style.display = 'none';
-            }
-        } else {
-            // 當 Firestore 找不到此人時，自動建立一份預設資料
-            db.collection("users").doc(uid).set({
-                name: "小勇士", // 預設顯示名稱
-                coins: 0,
-                role: "student",
-                attendance_score: 0,
-                performance_score: 0,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                console.log("已自動於 Firestore 建立新使用者資料！");
-            }).catch((error) => {
-                console.error("建立資料失敗：", error);
+        function bindUserData(uid) {
+            db.collection("users").doc(uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    currentUserDoc = doc.data();
+                    document.getElementById('user-name').innerText = currentUserDoc.name || "小勇士";
+                    document.getElementById('coin-count').innerText = currentUserDoc.coins || 0;
+                    document.getElementById('admin-btn').style.display = currentUserDoc.role === 'admin' ? 'flex' : 'none';
+                    
+                    document.getElementById('score-history-btn').style.display = currentUserDoc.role === 'admin' ? 'none' : 'flex';
+                    
+                    if (currentUserDoc.unread_notification && currentUserDoc.role !== 'admin') {
+                        showNotification(currentUserDoc.unread_notification);
+                        db.collection("users").doc(uid).update({
+                            unread_notification: firebase.firestore.FieldValue.delete()
+                        });
+                    }
+                } else {
+                    // 【修復核心】如果資料庫中沒有這位學生的資料，就自動幫他建檔！
+                    const inputName = document.getElementById('username').value.trim();
+                    db.collection("users").doc(uid).set({
+                        name: inputName || '學生',
+                        coins: 0, 
+                        attendance_score: 0, 
+                        performance_score: 0, 
+                        total_correct: 0, 
+                        total_incorrect: 0,
+                        role: 'student', 
+                        last_play_date: new Date().toLocaleDateString()
+                    }).then(() => {
+                        console.log("新學生資料庫檔案已自動生成！");
+                    }).catch(error => {
+                        console.error("生成資料庫檔案失敗:", error);
+                    });
+                }
             });
-        }
-    });
-}
 
             db.collection("score_history")
               .where("uid", "==", uid)
@@ -741,7 +746,6 @@ function bindUserData(uid) {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
-                // 修正 1: 移除強制設定 mimeType，避免 iPhone (Safari) 錄音當機，僅保留位元率壓縮
                 const options = { audioBitsPerSecond: 8000 }; 
                 mediaRecorder = new MediaRecorder(stream, options);
 
@@ -792,7 +796,6 @@ function bindUserData(uid) {
             const studentName = (currentUserDoc ? currentUserDoc.name : '未知學生') + ` (第 ${currentSelectedWeek} 週)`;
 
             try {
-                // 修正 2: 回復使用 Base64 轉換並存入 Firestore 的穩定機制，避開 Firebase Storage 設定與權限問題
                 const base64Audio = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onloadend = () => resolve(reader.result);
