@@ -117,6 +117,7 @@
         .btn-blue { background: linear-gradient(45deg, var(--blue), var(--blue-dark)); box-shadow: 0 4px 0 #2980b9; }
         .btn-green { background: linear-gradient(45deg, var(--green), var(--green-dark)); box-shadow: 0 4px 0 #27ae60; color: #111; }
         .btn-orange { background: linear-gradient(45deg, #f39c12, #e67e22); box-shadow: 0 4px 0 #d35400; color: white; }
+        .btn-teal { background: linear-gradient(45deg, #1abc9c, #16a085); box-shadow: 0 4px 0 #0e6655; color: white; }
         .btn-purple { background: linear-gradient(45deg, #9b59b6, #8e44ad); box-shadow: 0 4px 0 #732d91; color: white; }
         .btn-admin { background: #2c3e50; box-shadow: 0 4px 0 #1a252f; display: none; }
         
@@ -215,6 +216,12 @@
                     <div>我的分數紀錄<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">查看過往所有加分詳情</span></div>
                 </button>
 
+                
+                <button class="mode-btn btn-teal" onclick="openWeekSelector('story')">
+                    <span style="font-size:1.8em; margin-right:15px;">📖</span> 
+                    <div>故事重溫<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">圖文故事，補回進度與重溫精華</span></div>
+                </button>
+
                 <button id="admin-btn" class="mode-btn btn-admin" onclick="loadAdminPanel()">
                     <span style="font-size:1.8em; margin-right:15px;">📊</span> 
                     <div>導師管理台<br><span style="font-size:0.65em; font-weight:normal; opacity:0.9;">批改錄音與進度追蹤</span></div>
@@ -285,6 +292,18 @@
             </div>
         </div>
 
+        
+        <div id="story-section" class="page">
+            <div class="game-card">
+                <h2 class="game-title" style="color: #16a085;">📖 故事重溫</h2>
+                <div id="story-theme-reminder" class="theme-reminder"></div>
+                <div id="story-content" style="text-align: left; line-height: 1.8; font-size: 1.1em; margin-top: 20px; color: #34495e;">
+                    載入中...
+                </div>
+                <button id="finish-story-btn" class="action-btn submit" style="margin-top: 25px;" onclick="finishStory()">✅ 我已經讀完了 (領取 10 金幣)</button>
+            </div>
+        </div>
+
         <div id="admin-section" class="page">
             <div class="game-card" style="padding: 20px 10px;">
                 <h2 class="game-title" style="color: #2c3e50; margin-bottom: 10px;">📊 導師管理台</h2>
@@ -332,14 +351,17 @@
             1: "12/7", 2: "19/7", 3: "26/7", 4: "2/8", 5: "9/8", 6: "16/8"
         };
 
-        function isWeekUnlocked(week) {
-            if (week === 1) return true;
-            const now = new Date();
-            const dateStr = weekDatesConfig[week];
-            const [day, month] = dateStr.split('/');
-            const targetDate = new Date(2026, parseInt(month) - 1, parseInt(day));
-            return now >= targetDate;
-        }
+function isWeekUnlocked(week) {
+    // 新增這行：如果是導師 (admin)，直接回傳 true，無條件解鎖
+    if (currentUserDoc && currentUserDoc.role === 'admin') return true;
+
+    if (week === 1) return true;
+    const now = new Date();
+    const dateStr = weekDatesConfig[week];
+    const [day, month] = dateStr.split('/');
+    const targetDate = new Date(2026, parseInt(month) - 1, parseInt(day));
+    return now >= targetDate;
+}
 
         // Firebase 初始化設置
         const firebaseConfig = {
@@ -382,6 +404,136 @@
         // ==========================================
         // 七週的主題與題庫設定 (省略部分重複代碼，確保結構完整)
         // ==========================================
+        
+ const storyData = {
+            1: `
+                <div style="font-weight:bold; color:#e74c3c; font-size:1.2em; margin-bottom:10px;">🔥🦁 勇者傳說第一課：失去一切的少年</div>
+                <div style="margin-bottom:15px;">
+                    <strong>📖 背景：從貴族變戰俘</strong><br>
+                    想像一下突然失去家園的感覺。少年但以理就經歷了這一切，他被凶狠的士兵押解，赤腳走過沙漠，從原本的貴族變成了戰俘，來到滿是奇怪雕像的巴比倫。雖然身邊的環境全變了，但他心裡決定：對上帝的忠誠絕對不能變。
+                </div>
+                <div style="text-align:center; margin:15px 0;">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🍖 誘惑：最奢華的王宮美食</strong><br>
+                    巴比倫王下令給他們提供最頂級的王宮美食和美酒。對飢餓的俘虜來說，這簡直是極大的誘惑！但但以理知道，這些食物都是在偶像前祭拜過的。如果吃了，就等於承認巴比倫的神，忘記自己上帝子民的身分。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🥬 實驗：十天的蔬菜與水</strong><br>
+                    但以理非常有智慧，他沒有大吵大鬧，而是勇敢地向太監長提出一個實驗：「求你試試我們十天，讓我們只吃蔬菜、只喝白水。」 這不是為了減肥，而是為了堅守底線，並給上帝空間去展現大能。
+                </div>
+                <img src="story_1.jpg" alt="第一課圖片" style="max-width:100%; border-radius:10px; border:2px solid #bdc3c7;" onerror="this.style.display='none'">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>✨ 結局：聰明十倍的奇蹟</strong><br>
+                    十天過去，神蹟發生了！但以理和朋友們不但沒有餓壞，面貌反而比吃國王美食的人更健康俊美！後來國王親自考問，發現他們的智慧比全巴比倫的術士還要聰明十倍！這證明了：堅持真理不會讓你落後，反而會讓你擁有真正的卓越。
+                </div>
+            `,
+            2: `
+                <div style="font-weight:bold; color:#e74c3c; font-size:1.2em; margin-bottom:10px;">🔥🦁 勇者傳說第二課：揭開異夢奧祕</div>
+                <div style="margin-bottom:15px;">
+                    <strong>👑 危機：國王的死亡命令</strong><br>
+                    國王做了一個關乎整個世界命運的夢，但他醒來後竟然全忘了！他大發雷霆，要求所有人不僅要『解夢』，還要先『把夢的內容說出來』！巴比倫的術士們嚇壞了，國王下令處死全國智者，士兵已經來到但以理家門口了。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🙏 尋求：聯合的呼求</strong><br>
+                    但以理沒有慌張，他冷靜地向國王請求寬限時間，然後立刻找來三個好朋友，四個人一起跪下，懇切地求神把這個奧祕告訴他們。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>✨ 啟示：夢境的顯明</strong><br>
+                    那天晚上，上帝在異象中，把國王夢見的『巨大金像』（金頭、銀胸、銅腹、鐵腿、半鐵半泥的腳）清清楚楚地展現在但以理面前。但以理醒來後，第一件事就是大聲讚美上帝。
+                </div>
+                <img src="story_2.jpg" alt="第二課圖片" style="max-width:100%; border-radius:10px; border:2px solid #bdc3c7;" onerror="this.style.display='none'">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>💡 結局：真正的智慧</strong><br>
+                    但以理對國王說：『沒有任何聰明人能解答，但天上有一位上帝能顯明奧祕！』這證明了真正的智慧不是來自聰明，而是來自敬畏神，遇到難題時要第一時間向上帝尋求解答。
+                </div>
+            `,
+            3: `
+                <div style="font-weight:bold; color:#e74c3c; font-size:1.2em; margin-bottom:10px;">🔥🦁 勇者傳說第三課：火窯中的朋友</div>
+                <div style="margin-bottom:15px;">
+                    <strong>🎺 命令：巨大的金像</strong><br>
+                    尼布甲尼撒王造了一座九十尺高的金像，下令只要一聽到音樂，所有人必須立刻趴在地上敬拜。誰敢不拜，立刻扔進烈火的窯中！音樂響起，成千上萬的人像骨牌一樣全部倒下跪拜。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🛡️ 拒絕：絕不妥協</strong><br>
+                    但人群中有三個人筆直地站著，他們是但以理的三個朋友。有人立刻去打小報告。國王氣炸了，給他們最後一次機會。但他們堅定地回答：『這件事我們不需要考慮。』他們拒絕跪拜金像，寧可入火也不背叛所信。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🔥 神蹟：火中的第四個人</strong><br>
+                    國王怒吼著把火爐加熱七倍，火大到連把他們扔進去的士兵都被燒死了。三個朋友被綁著掉進烈火中。
+                </div>
+                <img src="story_3.jpg" alt="第三課圖片" style="max-width:100%; border-radius:10px; border:2px solid #bdc3c7;" onerror="this.style.display='none'">
+                <div style="margin-bottom:15px;">
+                    <strong>👼 結局：烈火中的同行者</strong><br>
+                    國王突然嚇得跳起來，指著火爐喊：『我們不是扔了三個人進去嗎？怎麼有四個人在火裡走來走去，而且連綁他們的繩子都不見了！第四個人的樣子好像神明！』神親自進入火中保護了他們。
+                </div>
+            `,
+            4: `
+                <div style="font-weight:bold; color:#e74c3c; font-size:1.2em; margin-bottom:10px;">🔥🦁 勇者傳說第四課：驕傲人的結局</div>
+                <div style="margin-bottom:15px;">
+                    <strong>👑 狂妄：自視甚高</strong><br>
+                    尼布甲尼撒王有一天在王宮的平頂上散步，看著腳下繁華無比的巴比倫城，他得意忘形地說：『看看這座偉大的城市，這全都是靠我強大的力量和威嚴建立起來的！我太厲害了！』
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>⚡ 審判：失去理智</strong><br>
+                    他的話還沒說完，天上突然傳來聲音：『你的王權被剝奪了！』瞬間，國王失去了理智。他因為狂妄而被趕離人間。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🐂 降卑：吃草如牛</strong><br>
+                    這位穿著華麗長袍的國王被趕出王宮。他在野地裡生活，吃草像牛一樣，身體被露水淋濕。他的頭髮長得像老鷹的羽毛，指甲長得像鳥的爪子。
+                </div>
+                <img src="story_4.jpg" alt="第四課圖片" style="max-width:100%; border-radius:10px; border:2px solid #bdc3c7;" onerror="this.style.display='none'">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🌤️ 恢復：仰望上天</strong><br>
+                    就這樣過了好長一段時間，直到他抬頭望向天空。當他終於學會謙卑，承認天上還有一位比他更偉大的神時，他的理智才恢復，王位也還給了他。
+                </div>
+            `,
+            5: `
+                <div style="font-weight:bold; color:#e74c3c; font-size:1.2em; margin-bottom:10px;">🔥🦁 勇者傳說第五課：不停止的禱告</div>
+                <div style="margin-bottom:15px;">
+                    <strong>🐍 陰謀：惡人的嫉妒</strong><br>
+                    但以理那時候已經是個白髮蒼蒼的老爺爺了，但他做事太優秀，國王甚至想把整個國家交給他管。其他官員嫉妒得發瘋，想找他的錯處，卻發現他清廉又盡責。於是，他們想到一個惡毒的計謀。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>📜 禁令：國王的玉璽</strong><br>
+                    這群壞人跑去哄騙國王：『王啊，你太偉大了！我們建議立一條新法律：三十天內，所有人只能向國王你祈禱，如果向任何神明祈禱，就要扔進獅子坑！』國王一聽很高興，就蓋了玉璽，法律立刻生效。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🙏 堅持：與素常一樣</strong><br>
+                    但以理聽說了這條法律，他沒有拉上窗簾偷偷躲起來。他照常回到家，打開朝向耶路撒冷的窗戶，雙膝跪下，向上帝禱告感謝。
+                </div>
+                <img src="story_5.jpg" alt="第五課圖片" style="max-width:100%; border-radius:10px; border:2px solid #bdc3c7;" onerror="this.style.display='none'">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🛡️ 結局：一日三次的約定</strong><br>
+                    他就跟昨天、前天、過去幾十年每一天做的一模一樣！明知有禁令，他仍然堅持不中斷與上帝的連結。
+                </div>
+            `,
+            6: `
+                <div style="font-weight:bold; color:#e74c3c; font-size:1.2em; margin-bottom:10px;">🔥🦁 勇者傳說第六課：封住獅子的口</div>
+                <div style="margin-bottom:15px;">
+                    <strong>🕳️ 入坑：國王的無奈</strong><br>
+                    壞官員立刻去向國王告狀。國王這才驚覺自己中計了，他想盡辦法想救但以理，但法律無法更改。到了日落，士兵只能把但以理扔進餓壞了的獅子坑裡。國王難過地對他說：『願你常事奉的神拯救你！』
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🌑 黑夜：截然不同的兩邊</strong><br>
+                    那天晚上，住在豪華王宮裡的國王，吃不下飯、睡不著覺，整夜翻來覆去。反而在又髒又臭的獅子坑裡，但以理卻安穩地度過了一夜。
+                </div>
+                <div style="margin-bottom:15px;">
+                    <strong>🦁 拯救：封住獅子的口</strong><br>
+                    天一亮，國王立刻衝到獅子坑邊，哀痛地喊：『但以理啊，你的神能救你嗎？』坑裡居然傳來但以理中氣十足的聲音：『王啊，願你萬歲！』
+                </div>
+                <img src="story_6.jpg" alt="第六課圖片" style="max-width:100%; border-radius:10px; border:2px solid #bdc3c7;" onerror="this.style.display='none'">
+                <div style="margin-bottom:15px;">
+                    <strong>✨ 結局：坑中的平安</strong><br>
+                    但以理被扔獅子坑卻毫髮無傷，因他所信的那位上帝差遣使者封住了獅子的口。真正的信心，是在危難與恐懼中，仍然相信神的保護與掌權。
+                </div>
+            `
+        };
+
         const weeklyThemes = {
             1: "🚫不向偶像低頭【決心】", 2: "🔮揭開異夢奧祕【智慧】", 3: "🔥火窯中的朋友【忠心】", 
             4: "😤驕傲人的結局【謙卑】", 5: "🙏不停止的禱告【堅持】", 6: "🦁封住獅子的口【信心】"
@@ -643,7 +795,7 @@
             const container = document.getElementById('week-buttons-container');
             container.innerHTML = '';
             
-            const titles = { 'verse': '選擇背金句週數', 'quiz': '選擇問答週數', 'iq': '選擇親子互動週數' };
+            const titles = { 'verse': '選擇背金句週數', 'quiz': '選擇問答週數', 'iq': '選擇親子互動週數', 'story': '選擇故事週數' };
             document.getElementById('week-title').innerText = titles[type];
 
             const maxAttempts = type === 'quiz' ? 2 : 3;
@@ -674,7 +826,8 @@
                     btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週<br><span style="font-size:0.65em; font-weight:normal;">${adminText}</span></div>`;
                     btn.onclick = () => {
                         if (type === 'verse') startVerse(i);
-                        else if (type === 'quiz') startQuiz(i);
+                    else if (type === 'quiz') startQuiz(i);
+                    else if (type === 'story') startStory(i);
                     };
                 }
                 container.appendChild(btn);
@@ -1005,6 +1158,64 @@
                 }
                 showNotification(inc > 0 ? "加分成功！" : "扣分/復原成功！", inc > 0 ? "#2ecc71" : "#e74c3c");
             });
+        }
+
+        
+        function startStory(weekIndex) {
+            currentSelectedWeek = weekIndex;
+            document.getElementById('story-theme-reminder').innerText = "💡 " + (weeklyThemes[weekIndex] || "");
+            document.getElementById('story-content').innerHTML = storyData[weekIndex] || "本週故事內容尚在準備中...";
+            
+            // 檢查是否已讀過
+            const storyField = `story_read_${currentSelectedWeek}`;
+            if (currentUserDoc && currentUserDoc[storyField]) {
+                document.getElementById('finish-story-btn').innerText = "✅ 你已經完成本週故事（已領獎）";
+                document.getElementById('finish-story-btn').style.background = "#95a5a6";
+                document.getElementById('finish-story-btn').style.boxShadow = "0 4px 0 #7f8c8d";
+                document.getElementById('finish-story-btn').disabled = true;
+            } else {
+                document.getElementById('finish-story-btn').innerText = "✅ 我已經讀完了 (領取 10 金幣)";
+                document.getElementById('finish-story-btn').style.background = "linear-gradient(45deg, #1abc9c, #16a085)";
+                document.getElementById('finish-story-btn').style.boxShadow = "0 4px 0 #0e6655";
+                document.getElementById('finish-story-btn').disabled = false;
+            }
+            
+            navigateTo('story-section');
+        }
+
+        function finishStory() {
+            if(!currentUserId) return;
+            
+            const userRef = db.collection("users").doc(currentUserId);
+            const storyField = `story_read_${currentSelectedWeek}`;
+            
+            if (currentUserDoc && currentUserDoc[storyField]) {
+                showNotification("👍 你已經重溫過這週的故事了！");
+                goBack();
+            } else {
+                document.getElementById('finish-story-btn').disabled = true;
+                document.getElementById('finish-story-btn').innerText = "處理中...";
+                
+                userRef.update({
+                    coins: firebase.firestore.FieldValue.increment(10),
+                    [storyField]: true
+                }).then(() => {
+                    const qDetailStr = `第 ${currentSelectedWeek} 週故事`;
+                    addScoreHistory(currentUserId, `📖 閱讀: ${qDetailStr}`, 10);
+                    showNotification("✅ 故事閱讀完畢！獲得 10 金幣！");
+                    
+                    // Update local doc safely
+                    currentUserDoc[storyField] = true;
+                    currentUserDoc.coins = (currentUserDoc.coins || 0) + 10;
+                    document.getElementById('coin-count').innerText = currentUserDoc.coins;
+                    
+                    goBack();
+                }).catch(err => {
+                    console.error(err);
+                    showNotification("處理失敗，請重試", "#e74c3c");
+                    document.getElementById('finish-story-btn').disabled = false;
+                });
+            }
         }
 
         window.onload = () => {
