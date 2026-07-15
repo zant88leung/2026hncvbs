@@ -854,15 +854,9 @@ function isWeekUnlocked(week) {
                 mediaRecorder = new MediaRecorder(stream, options);
                 audioChunks = [];
                 mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-mediaRecorder.onstop = () => {
-    // 抓取 mediaRecorder 實際使用的格式，讓 iPad 保持原生支援的格式 (如 audio/mp4)
-    audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-    
-    const playback = document.getElementById('audio-playback');
-    playback.src = URL.createObjectURL(audioBlob);
-    playback.style.display = 'block';
-    document.getElementById('upload-record-btn').style.display = 'block';
-};
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const playback = document.getElementById('audio-playback');
                     playback.src = URL.createObjectURL(audioBlob);
                     playback.style.display = 'block';
                     document.getElementById('upload-record-btn').style.display = 'block';
