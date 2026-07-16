@@ -353,7 +353,7 @@
 
 function isWeekUnlocked(week) {
     // 新增這行：如果是導師 (admin)，直接回傳 true，無條件解鎖
-    if (currentUserDoc && currentUserDoc.role === 'admin') return true;
+    if (currentUserDoc && (currentUserDoc.role === 'admin' || currentUserDoc.role === 'tester')) return true;
 
     if (week === 1) return true;
     const now = new Date();
@@ -488,7 +488,7 @@ function isWeekUnlocked(week) {
                 </div>
                 <div style="margin-bottom:15px;">
                     <strong>🌤️ 恢復：仰望上天</strong><br>
-                    就這樣過了好長一段時間，直到他抬頭望向天空。當他終於學會謙卑，承認天上還有一位比他更偉大的神時，他的理智才恢復，王位也還給了他。
+                    就這樣過了好長一段時間，直到他抬頭望向天空。當當他終於學會謙卑，承認天上還有一位比他更偉大的神時，他的理智才恢復，王位也還給了他。
                 </div>
             `,
             5: `
@@ -815,14 +815,14 @@ function isWeekUnlocked(week) {
                     btn.className = 'mode-btn btn-orange';
                     btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">👨‍👩‍👧‍👦</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.7em; font-weight:bold; color:#fffdf5;">與家人一起動動腦筋</span></div>`;
                     btn.onclick = () => { startIQ(i); };
-                } else if (remaining <= 0 && currentUserDoc && currentUserDoc.role !== 'admin') {
+                } else if (remaining <= 0 && currentUserDoc && currentUserDoc.role !== 'admin' && currentUserDoc.role !== 'tester') {
                     btn.className = 'mode-btn btn-locked';
                     btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">⏳</span> <div>第 ${i} 週 (${weekDateLabel})<br><span style="font-size:0.65em; font-weight:bold; color:#e74c3c;">次數已用盡 (${maxAttempts}/${maxAttempts})</span></div>`;
                     btn.onclick = () => { alert(`⏳ 這週的次數已經用完囉！下週繼續努力！`); };
                 } else {
                     const icon = type === 'quiz' ? '📝' : '📖';
                     btn.className = `mode-btn ${type === 'quiz' ? 'btn-green' : 'btn-blue'}`;
-                    const adminText = (currentUserDoc && currentUserDoc.role === 'admin') ? "無限次" : `剩餘 ${remaining} 次`;
+                    const adminText = (currentUserDoc && (currentUserDoc.role === 'admin' || currentUserDoc.role === 'tester')) ? "無限次" : `剩餘 ${remaining} 次`;
                     btn.innerHTML = `<span style="font-size:1.5em; margin-right:15px;">${icon}</span> <div>第 ${i} 週<br><span style="font-size:0.65em; font-weight:normal;">${adminText}</span></div>`;
                     btn.onclick = () => {
                         if (type === 'verse') startVerse(i);
@@ -888,7 +888,7 @@ function isWeekUnlocked(week) {
             
             const maxAttempts = 3;
             const usedAttempts = currentUserDoc ? (currentUserDoc[`verse_attempts_${currentSelectedWeek}`] || 0) : 0;
-            if (usedAttempts >= maxAttempts && currentUserDoc.role !== 'admin') {
+            if (usedAttempts >= maxAttempts && currentUserDoc.role !== 'admin' && currentUserDoc.role !== 'tester') {
                 alert("本週錄音上傳次數已用完！"); btn.innerText = "📤 上傳給導師批改"; btn.disabled = false; return;
             }
 
@@ -900,7 +900,7 @@ function isWeekUnlocked(week) {
                     reader.onerror = reject; reader.readAsDataURL(audioBlob);
                 });
 
-                if (currentUserDoc && currentUserDoc.role !== 'admin') {
+                if (currentUserDoc && currentUserDoc.role !== 'admin' && currentUserDoc.role !== 'tester') {
                     await db.collection("users").doc(currentUserId).update({
                         [`verse_attempts_${currentSelectedWeek}`]: firebase.firestore.FieldValue.increment(1)
                     });
@@ -928,7 +928,7 @@ function isWeekUnlocked(week) {
         // ==========================================
         let currentQuizList = []; let currentQuizIndex = 0;
         function startQuiz(weekIndex) {
-            if (currentUserDoc && currentUserDoc.role !== 'admin') {
+            if (currentUserDoc && currentUserDoc.role !== 'admin' && currentUserDoc.role !== 'tester') {
                 db.collection("users").doc(currentUserId).update({ [`quiz_attempts_${weekIndex}`]: firebase.firestore.FieldValue.increment(1) });
             }
             currentSelectedWeek = weekIndex;
